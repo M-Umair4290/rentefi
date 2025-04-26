@@ -1,0 +1,36 @@
+body {
+    font-family: "Montserrat", sans-serif;
+}
+
+.logincover {
+    background-image: url(../assets/loginphoto.jpg);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+input {
+    height: 50px;
+    padding-left: 25px;
+    border: 1px solid #e6e6e6;
+}
+
+input::placeholder {
+    color: black;
+}
+
+button {
+    color: white;
+    font-weight: bold;
+    background-color: #1E90FF;
+    margin: 0 auto;
+    width: 60%;
+    padding: 8px 15px;
+    border: none;
+}
+
+button:hover {
+    transition: linear;
+    transition-duration: 0.3s;
+    background-color: #F39C12;
+}

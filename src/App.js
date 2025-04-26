@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import Navbar from './components/navbar.js'
-import Footer from './components/footer.js';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import Login from './pages/Login';
 
 // import logo from './logo.svg';
 // import './App.css';
@@ -10,7 +11,9 @@ function App() {
     <>
       <BrowserRouter>
         <Navbar />
+        <Login />
         <Footer />
+
 
         {/* <Routes> */}
         {/* <Route path='/' element={<Home />}></Route> */}
