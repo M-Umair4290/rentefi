@@ -19,6 +19,9 @@ function Login() {
 
         if (email === validEmail && password === validPassword) {
             setError('');
+
+            localStorage.setItem('user', JSON.stringify({ email }));
+
             // Redirect to dashboard or homepage after successful login
             navigate('/dashboard');
         } else {
@@ -35,7 +38,7 @@ function Login() {
 
 
                     <div className='col-6 d-flex align-items-center justify-content-evenly'>
-                        <form className='d-flex flex-column justify-content-center' onChange={handleSubmit}>
+                        <form className='d-flex flex-column justify-content-center' onSubmit={handleSubmit}>
                             <h1>Login</h1>
                             <p>Access to the Rentefi system</p>
 
