@@ -10,9 +10,9 @@ function App() {
   return (
     <>
       <BrowserRouter>
-        <Navbar />
+        {/* <Navbar /> */}
         <Login />
-        <Footer />
+        {/* <Footer /> */}
 
 
         {/* <Routes> */}
