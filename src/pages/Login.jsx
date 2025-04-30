@@ -1,28 +1,33 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import styles from './login.module.css'
 // import MyImage from '../assets/loginphoto.jpg'
 
 function Login() {
 
     const navigate = useNavigate();
+
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
-    // Current Credentials (Without Backend)
-    const validEmail = 'admin@rentefi.com';
-    const validPassword = '12345';
+    // // Current Credentials (Without Backend)
+    // const validEmail = 'admin@rentefi.com';
+    // const validPassword = '12345';
 
     const handleSubmit = (event) => {
         event.preventDefault();
 
-        if (email === validEmail && password === validPassword) {
+        // Get stored user from localStorage
+        const storedUser = JSON.parse(localStorage.getItem('registeredUser'));
+
+        if (storedUser && storedUser.email === email && storedUser.password === password) {
             setError('');
 
+            // Save current login session
             localStorage.setItem('user', JSON.stringify({ email }));
 
-            // Redirect to dashboard or homepage after successful login
+            // Navigate to dashboard
             navigate('/dashboard');
         } else {
             setError('Invalid email or password.');
@@ -48,7 +53,8 @@ function Login() {
 
                             {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
 
-                            <button type='submit' className='my-5'>Login</button>
+                            <button type='submit' className='my-4'>Login</button>
+                            <p className='text-center fs-6'>Don't have an account? <Link to="/signup">Signup now</Link></p>
                         </form>
                     </div>
                 </div>
