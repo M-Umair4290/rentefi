@@ -23,12 +23,12 @@ function Customers() {
                     </div>
 
                     <div className="col-9">
-                        {/* <button onClick={handleLogout}>Logout</button> */}
+
                     </div>
                 </div>
 
             </div>
-            
+
             <Footer />
         </>
     )

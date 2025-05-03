@@ -14,25 +14,30 @@ function Vehicles() {
     };
 
     const [vehicles, setVehicles] = useState([]);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         axios.get(`https://car-backend-production.up.railway.app/api/cars`)
             .then(res => setVehicles(res.data))
-            .catch(err => console.error(err));
+            .catch(err => {
+                console.error(err);
+                setError('Failed to load vehicles data.');
+            });
     }, []);
 
     return (
         <>
             <Navbar />
-            {/* <button onClick={handleLogout}>Logout</button> */}
 
-            <div className='container-fluid px-0 overflow-hidden'>
+            <div className='container-fluid px-0 overflow-hidden text-center'>
                 <div className="row">
                     <div className="col-3">
                         <Sidebar />
                     </div>
 
-                    <div className='col-9 p-4 overflow-scroll'>
+                    <div className='col-9 p-3 overflow-scroll'>
+                        {error && <div className="alert alert-danger">{error}</div>}
+
                         <table className='' >
                             <thead>
                                 <tr className='border p-2'>
@@ -51,56 +56,62 @@ function Vehicles() {
                             </thead>
 
                             <tbody>
-                                {vehicles.map((car) => (
-                                    <tr key={car._id}>
-                                        {/* <td className='text-wrap'>
+                                {vehicles.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="10" className="text-center">No vehicles available</td>
+                                    </tr>
+                                ) : (
+                                    vehicles.map((car) => (
+                                        <tr key={car._id}>
+                                            {/* <td className='text-wrap'>
                                             {car._id}
                                         </td> */}
 
-                                        <td>
-                                            <img src={car.carImage} alt='' width={'100px'} />
+                                            <td>
+                                                <img src={car.carImage} alt={`${car.name} Photo`} width={'100px'} />
 
-                                            {/* <img src="https://images.pexels.com/photos/170811/pexels-photo-170811.jpeg?cs=srgb&dl=pexels-mikebirdy-170811.jpg&fm=jpg" alt="" width={'100px'} /> */}
-                                        </td>
+                                                {/* <img src="https://images.pexels.com/photos/170811/pexels-photo-170811.jpeg?cs=srgb&dl=pexels-mikebirdy-170811.jpg&fm=jpg" alt="" width={'100px'} /> */}
+                                            </td>
 
-                                        <td>
-                                            {car.name}
-                                        </td>
+                                            <td>
+                                                {car.name}
+                                            </td>
 
-                                        <td>
-                                            {car.modelYear}
-                                        </td>
+                                            <td>
+                                                {car.modelYear}
+                                            </td>
 
-                                        <td>
-                                            {car.brand}
-                                        </td>
+                                            <td>
+                                                {car.brand}
+                                            </td>
 
-                                        <td>
-                                            {car.fuelType}
-                                        </td>
+                                            <td>
+                                                {car.fuelType}
+                                            </td>
 
-                                        <td>
-                                            {car.seats}
-                                        </td>
+                                            <td>
+                                                {car.seats}
+                                            </td>
 
-                                        <td>
-                                            {car.transmission}
-                                        </td>
+                                            <td>
+                                                {car.transmission}
+                                            </td>
 
-                                        <td>
-                                            {car.pricePerDay}
-                                        </td>
+                                            <td>
+                                                {car.pricePerDay}
+                                            </td>
 
-                                        <td>
-                                            {car.available}
-                                        </td>
+                                            <td>
+                                                {car.available}
+                                            </td>
 
-                                        <td>
-                                            <button className='btn btn-primary'>Edit</button>
-                                        </td>
-                                    </tr>
-                                ))
-                                }
+                                            <td>
+                                                <button className='btn btn-primary'>Edit</button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+
                             </tbody>
                         </table>
                     </div>

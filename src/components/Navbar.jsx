@@ -39,9 +39,9 @@ function Navbar() {
                         <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
                             {user ? (
                                 <>
-                                    <li><Link className="dropdown-item" to="/profile">Profile</Link></li>
+                                    {/* <li><Link className="dropdown-item" to="/profile">Profile</Link></li> */}
 
-                                    <li><Link className="dropdown-item" to="/settings">Settings</Link></li>
+                                    {/* <li><Link className="dropdown-item" to="/settings">Settings</Link></li> */}
 
                                     <li><button className="dropdown-item text-danger" onClick={handleLogout}>Logout</button></li>
                                 </>
