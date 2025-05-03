@@ -1,22 +1,112 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Sidebar from '../components/Sidebar';
 
 function Vehicles() {
 
-    const navigate = useNavigate;
+    const navigate = useNavigate();
     const handleLogout = () => {
         localStorage.removeItem('user');
         navigate('/login');
     };
 
+    const [vehicles, setVehicles] = useState([]);
+
+    useEffect(() => {
+        axios.get(`https://car-backend-production.up.railway.app/api/cars`)
+            .then(res => setVehicles(res.data))
+            .catch(err => console.error(err));
+    }, []);
+
     return (
         <>
             <Navbar />
             {/* <button onClick={handleLogout}>Logout</button> */}
-            <Sidebar />
+
+            <div className='container-fluid px-0 overflow-hidden'>
+                <div className="row">
+                    <div className="col-3">
+                        <Sidebar />
+                    </div>
+
+                    <div className='col-9 p-4 overflow-scroll'>
+                        <table className='' >
+                            <thead>
+                                <tr className='border p-2'>
+                                    {/* <th className='border p-3'>ID</th> */}
+                                    <th className='border p-3'>Image</th>
+                                    <th className='border p-3'>Name</th>
+                                    <th className='border p-3'>Year</th>
+                                    <th className='border p-3'>Vehicle ID</th>
+                                    <th className='border p-3'>Type</th>
+                                    <th className='border p-3'>Seats</th>
+                                    <th className='border p-3'>Transmission</th>
+                                    <th className='border p-3'>Rate Per Day</th>
+                                    <th className='border p-3'>Status</th>
+                                    <th className='border p-3'>Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {vehicles.map((car) => (
+                                    <tr key={car._id}>
+                                        {/* <td className='text-wrap'>
+                                            {car._id}
+                                        </td> */}
+
+                                        <td>
+                                            <img src={car.carImage} alt='' width={'100px'} />
+
+                                            {/* <img src="https://images.pexels.com/photos/170811/pexels-photo-170811.jpeg?cs=srgb&dl=pexels-mikebirdy-170811.jpg&fm=jpg" alt="" width={'100px'} /> */}
+                                        </td>
+
+                                        <td>
+                                            {car.name}
+                                        </td>
+
+                                        <td>
+                                            {car.modelYear}
+                                        </td>
+
+                                        <td>
+                                            {car.brand}
+                                        </td>
+
+                                        <td>
+                                            {car.fuelType}
+                                        </td>
+
+                                        <td>
+                                            {car.seats}
+                                        </td>
+
+                                        <td>
+                                            {car.transmission}
+                                        </td>
+
+                                        <td>
+                                            {car.pricePerDay}
+                                        </td>
+
+                                        <td>
+                                            {car.available}
+                                        </td>
+
+                                        <td>
+                                            <button className='btn btn-primary'>Edit</button>
+                                        </td>
+                                    </tr>
+                                ))
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <Footer />
         </>
     )

@@ -15,8 +15,20 @@ function Customers() {
     return (
         <>
             <Navbar />
-            {/* <button onClick={handleLogout}>Logout</button> */}
-            <Sidebar />
+
+            <div className="container-fluid px-0 overflow-hidden">
+                <div className="row">
+                    <div className="col-3">
+                        <Sidebar />
+                    </div>
+
+                    <div className="col-9">
+                        {/* <button onClick={handleLogout}>Logout</button> */}
+                    </div>
+                </div>
+
+            </div>
+            
             <Footer />
         </>
     )
