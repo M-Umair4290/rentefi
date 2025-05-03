@@ -1,12 +1,12 @@
-import React from 'react';
+import React from 'react'
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Sidebar from '../components/Sidebar';
 
-function Dashboard() {
+function Vehicles() {
 
-    const navigate = useNavigate();
+    const navigate = useNavigate;
     const handleLogout = () => {
         localStorage.removeItem('user');
         navigate('/login');
@@ -22,4 +22,4 @@ function Dashboard() {
     )
 }
 
-export default Dashboard
+export default Vehicles

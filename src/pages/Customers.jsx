@@ -1,10 +1,10 @@
-import React from 'react';
+import React from 'react'
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Sidebar from '../components/Sidebar';
 
-function Dashboard() {
+function Customers() {
 
     const navigate = useNavigate();
     const handleLogout = () => {
@@ -22,4 +22,4 @@ function Dashboard() {
     )
 }
 
-export default Dashboard
+export default Customers

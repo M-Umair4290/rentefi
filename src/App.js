@@ -5,8 +5,12 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup'
-import Dashboard from './pages/Dashboard';
 import PrivateRoute from './components/PrivateRoute';
+import Dashboard from './pages/Dashboard';
+import Vehicles from './pages/Vehicles';
+import Sidebar from './components/Sidebar';
+import Bookings from './pages/Bookings';
+import Customers from './pages/Customers';
 
 // import logo from './logo.svg';
 // import './App.css';
@@ -16,6 +20,7 @@ function App() {
     <>
       <BrowserRouter>
         {/* <Navbar /> */}
+        {/* <Sidebar /> */}
         {/* <Login /> */}
         {/* <Signup /> */}
         {/* <Footer /> */}
@@ -25,6 +30,7 @@ function App() {
           <Route path='/' element={<Home />}></Route>
           <Route path='/login' element={<Login />}></Route>
           <Route path='/signup' element={<Signup />}></Route>
+
 
           {/* Protected route */}
           <Route
@@ -36,6 +42,32 @@ function App() {
             }
           />
 
+          <Route
+            path="/vehicles"
+            element={
+              <PrivateRoute>
+                <Vehicles />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/bookings"
+            element={
+              <PrivateRoute>
+                <Bookings />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/customers"
+            element={
+              <PrivateRoute>
+                <Customers />
+              </PrivateRoute>
+            }
+          />
 
         </Routes>
       </BrowserRouter>
