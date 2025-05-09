@@ -16,6 +16,10 @@ function Vehicles() {
     const [vehicles, setVehicles] = useState([]);
     const [error, setError] = useState(null);
 
+    const handleEdit = (id) => {
+        navigate(`/edit-vehicle/${id}`); // Navigate to the EditVehicle page
+    };
+
     useEffect(() => {
         axios.get(`https://car-backend-production.up.railway.app/api/cars`)
             .then(res => setVehicles(res.data))
@@ -37,6 +41,12 @@ function Vehicles() {
 
                     <div className='col-9 p-3 overflow-scroll'>
                         {error && <div className="alert alert-danger">{error}</div>}
+
+                        <div className="d-flex justify-content-end mb-3">
+                            <button className="btn btn-success" onClick={() => navigate('/add-vehicle')}>
+                                + Add Vehicle
+                            </button>
+                        </div>
 
                         <table className='' >
                             <thead>
@@ -82,7 +92,7 @@ function Vehicles() {
                                             </td>
 
                                             <td>
-                                                {car.brand}
+                                                {car.numPlate}
                                             </td>
 
                                             <td>
@@ -102,11 +112,15 @@ function Vehicles() {
                                             </td>
 
                                             <td>
-                                                {car.available}
+                                                <span className={`badge ${car.available ? 'bg-success' : 'bg-danger'}`}>
+                                                    {car.available ? 'Available' : 'Booked'}
+                                                </span>
                                             </td>
 
                                             <td>
-                                                <button className='btn btn-primary'>Edit</button>
+                                                <button className='btn btn-primary' onClick={() => handleEdit(car._id)}>
+                                                    Edit
+                                                </button>
                                             </td>
                                         </tr>
                                     ))

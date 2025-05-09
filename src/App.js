@@ -13,6 +13,8 @@ import Vehicles from './pages/Vehicles';
 import Sidebar from './components/Sidebar';
 import Bookings from './pages/Bookings';
 import Customers from './pages/Customers';
+import AddVehicle from './components/AddVehicle'
+import EditVehicle from './components/EditVehicle'
 
 // import logo from './logo.svg';
 // import './App.css';
@@ -67,6 +69,24 @@ function App() {
             element={
               <PrivateRoute>
                 <Customers />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/add-vehicle"
+            element={
+              <PrivateRoute>
+                <AddVehicle />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/edit-vehicle/:id"
+            element={
+              <PrivateRoute>
+                <EditVehicle />
               </PrivateRoute>
             }
           />
