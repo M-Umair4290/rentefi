@@ -15,6 +15,9 @@ import Bookings from './pages/Bookings';
 import Customers from './pages/Customers';
 import AddVehicle from './components/AddVehicle'
 import EditVehicle from './components/EditVehicle'
+import Cars from './pages/Cars';
+import About from './pages/About';
+import Contact from './pages/Contact';
 
 // import logo from './logo.svg';
 // import './App.css';
@@ -34,6 +37,9 @@ function App() {
           <Route path='/' element={<Home />}></Route>
           <Route path='/login' element={<Login />}></Route>
           <Route path='/signup' element={<Signup />}></Route>
+          <Route path='/cars' element={<Cars />}></Route>
+          <Route path='/about' element={<About />}></Route>
+          <Route path='/contact' element={<Contact />}></Route>
 
 
           {/* Protected route */}
