@@ -16,6 +16,8 @@ import Customers from './pages/Customers';
 import AddVehicle from './components/AddVehicle'
 import EditVehicle from './components/EditVehicle'
 import Cars from './pages/Cars';
+import CarDetails from './pages/CarDetails';
+import BookCar from './pages/BookCar';
 import About from './pages/About';
 import Contact from './pages/Contact';
 
@@ -40,6 +42,8 @@ function App() {
           <Route path='/cars' element={<Cars />}></Route>
           <Route path='/about' element={<About />}></Route>
           <Route path='/contact' element={<Contact />}></Route>
+          <Route path="/cars/:id" element={<CarDetails />} />
+          <Route path="/book/:id" element={<BookCar />} />
 
 
           {/* Protected route */}
@@ -96,6 +100,15 @@ function App() {
               </PrivateRoute>
             }
           />
+
+          {/* <Route
+            path="/book/:id"
+            element={
+              <PrivateRoute>
+                <BookCar />
+              </PrivateRoute>
+            }
+          /> */}
 
         </Routes>
       </BrowserRouter>

@@ -36,8 +36,7 @@ function Cars() {
                                     <p className="card-text text-muted">Price per Day: ${car.pricePerDay}</p>
                                     <Link
                                         to={`/cars/${car._id}`}
-                                        className="btn btn-primary w-100 py-2 rounded-3 mt-3"
-                                    >
+                                        className="btn btn-primary w-100 py-2 rounded-3 mt-3">
                                         View Details
                                     </Link>
                                 </div>
