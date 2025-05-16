@@ -28,15 +28,41 @@ function Dashboard() {
 
     const [bookingTrends, setBookingTrends] = useState([]);
 
-    useEffect(() => {
-        axios.get('/api/dashboard-stats')
-            .then(response => {
-                setStats(response.data.stats);
-                setBookingTrends(response.data.bookingTrends);
-            })
-            .catch(error => console.error(error));
+    // useEffect(() => {
+    //     axios.get('/api/dashboard-stats')
+    //         .then(response => {
+    //             setStats(response.data.stats);
+    //             setBookingTrends(response.data.bookingTrends);
+    //         })
+    //         .catch(error => console.error(error));
 
-        // Cleanup chart when component unmounts or data changes
+    //     // Cleanup chart when component unmounts or data changes
+    //     return () => {
+    //         if (window.myChart) {
+    //             window.myChart.destroy();
+    //         }
+    //     };
+    // }, []);
+
+    useEffect(() => {
+        // Simulated mock data
+        const mockStats = {
+            totalCustomers: 120,
+            totalBookings: 45,
+            totalRevenue: 9870,
+        };
+
+        const mockBookingTrends = [
+            { date: '2025-01-01', bookings: 5 },
+            { date: '2025-01-02', bookings: 8 },
+            { date: '2025-01-03', bookings: 12 },
+            { date: '2025-01-04', bookings: 6 },
+            { date: '2025-01-05', bookings: 14 },
+        ];
+
+        setStats(mockStats);
+        setBookingTrends(mockBookingTrends);
+
         return () => {
             if (window.myChart) {
                 window.myChart.destroy();
