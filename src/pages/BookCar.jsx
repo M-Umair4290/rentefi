@@ -29,6 +29,14 @@ function BookCar() {
 
     const handleSubmit = async e => {
         e.preventDefault();
+
+        const pickup = new Date(form.pickupDate);
+        const returnD = new Date(form.returnDate);
+
+        if (returnD <= pickup) {
+            return alert("Return date must be after pickup date.");
+        }
+
         try {
             await axios.post('https://car-backend-production.up.railway.app/api/bookings', {
                 carId: car._id,

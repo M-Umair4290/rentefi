@@ -29,7 +29,7 @@ function Bookings() {
 
         const fetchCars = async () => {
             try {
-                const res = await axios.get('https://car-backend-production.up.railway.app/api/bookings'); // To resolve carId -> carName
+                const res = await axios.get('https://car-backend-production.up.railway.app/api/cars'); // To resolve carId -> carName
                 setCars(res.data);
             } catch (error) {
                 console.error('Error fetching cars:', error);
@@ -121,10 +121,10 @@ function Bookings() {
                                         <td>{booking.totalPrice} PKR</td>
                                         <td>{booking.status}</td>
                                         <td>
-                                            <button className="btn btn-success btn-sm me-1" onClick={() => handleApprove(booking._id)} disabled={booking.status !== 'Pending'}>
+                                            <button className="btn btn-success btn-sm me-1" onClick={() => handleApprove(booking._id)} disabled={booking.status.toLowerCase() !== 'pending'}>
                                                 Approve
                                             </button>
-                                            <button className="btn btn-danger btn-sm" onClick={() => handleReject(booking._id)} disabled={booking.status !== 'Pending'}>
+                                            <button className="btn btn-danger btn-sm" onClick={() => handleReject(booking._id)} disabled={booking.status.toLowerCase() !== 'pending'}>
                                                 Reject
                                             </button>
                                         </td>

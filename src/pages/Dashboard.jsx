@@ -20,38 +20,38 @@ function Dashboard() {
     };
 
 
-    // const [stats, setStats] = useState({
-    //     totalCustomers: 0,
-    //     totalBookings: 0,
-    //     totalRevenue: 0,
-    // });
-    // const [bookingTrends, setBookingTrends] = useState([]);
+    const [stats, setStats] = useState({
+        totalCustomers: 0,
+        totalBookings: 0,
+        totalRevenue: 0,
+    });
+    const [bookingTrends, setBookingTrends] = useState([]);
 
-    // useEffect(() => {
-    //     axios.get('/api/dashboard-stats')
-    //         .then(response => {
-    //             setStats(response.data.stats);
-    //             setBookingTrends(response.data.bookingTrends);
-    //         })
-    //         .catch(error => console.error(error));
+    useEffect(() => {
+        axios.get('/api/dashboard-stats')
+            .then(response => {
+                setStats(response.data.stats);
+                setBookingTrends(response.data.bookingTrends);
+            })
+            .catch(error => console.error(error));
 
-    //     // Cleanup chart when component unmounts or data changes
-    //     return () => {
-    //         if (window.myChart) {
-    //             window.myChart.destroy();
-    //         }
-    //     };
-    // }, []);
+        // Cleanup chart when component unmounts or data changes
+        return () => {
+            if (window.myChart) {
+                window.myChart.destroy();
+            }
+        };
+    }, []);
 
-    // const chartData = {
-    //     labels: bookingTrends.map(item => item.date),
-    //     datasets: [{
-    //         label: 'Bookings Over Time',
-    //         data: bookingTrends.map(item => item.bookings),
-    //         borderColor: 'rgba(75,192,192,1)',
-    //         fill: false,
-    //     }],
-    // };
+    const chartData = {
+        labels: bookingTrends.map(item => item.date),
+        datasets: [{
+            label: 'Bookings Over Time',
+            data: bookingTrends.map(item => item.bookings),
+            borderColor: 'rgba(75,192,192,1)',
+            fill: false,
+        }],
+    };
 
     return (
         <>
@@ -64,7 +64,7 @@ function Dashboard() {
                     </div>
 
                     <div className="col-9">
-                        {/* <div className="container">
+                        <div className="container">
                             <h3>Admin Dashboard</h3>
                             <div className="row">
                                 <div className="col-md-3">
@@ -99,7 +99,7 @@ function Dashboard() {
                                     <Line data={chartData} />
                                 </div>
                             </div>
-                        </div> */}
+                        </div>
                     </div>
                 </div>
 

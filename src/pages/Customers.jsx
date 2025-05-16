@@ -14,14 +14,30 @@ function Customers() {
     };
 
 
-    // const [customers, setCustomers] = useState([]);
+    const [customers, setCustomers] = useState([]);
 
-    // useEffect(() => {
-    //     axios.get('/api/customers') // Get customers data from the API
-    //         .then(response => setCustomers(response.data))
-    //         .catch(error => console.error(error));
-    // }, []);
+    useEffect(() => {
+        axios.get('https://car-backend-production.up.railway.app/api/bookings') // Get customers data from the API
+            .then(response => setCustomers(response.data))
+            .catch(error => console.error(error));
+    }, []);
 
+
+    const handleEdit = (id) => {
+        navigate(`/edit-customer/${id}`);
+    };
+
+
+    const handleDelete = (id) => {
+        if (window.confirm("Are you sure you want to delete this customer?")) {
+            axios.delete(`https://car-backend-production.up.railway.app/api/bookings/${id}`)
+                .then(() => {
+                    // Remove deleted customer from state so UI updates immediately
+                    setCustomers(customers.filter(customer => customer._id !== id));
+                })
+                .catch(error => console.error('Delete error:', error));
+        }
+    };
 
     return (
         <>
@@ -34,13 +50,13 @@ function Customers() {
                     </div>
 
                     <div className="col-9">
-                        {/* <div className="container">
+                        <div className="container">
                             <h3>Customer List</h3>
                             <table className="table">
                                 <thead>
                                     <tr>
                                         <th>Name</th>
-                                        <th>Email</th>
+                                        {/* <th>Email</th> */}
                                         <th>Phone</th>
                                         <th>Status</th>
                                         <th>Bookings</th>
@@ -50,20 +66,21 @@ function Customers() {
                                 <tbody>
                                     {customers.map(customer => (
                                         <tr key={customer._id}>
-                                            <td>{customer.name}</td>
-                                            <td>{customer.email}</td>
-                                            <td>{customer.phone}</td>
+                                            <td>{customer.customerName}</td>
+                                            {/* <td>{customer.email}</td> */}
+                                            <td>{customer.customerPhone}</td>
                                             <td>{customer.status}</td>
                                             <td>{customer.bookings}</td>
                                             <td>
-                                                <button>Edit</button>
-                                                <button>Delete</button>
+                                                <button className='btn btn-primary my-1' onClick={() => handleEdit(customer._id)}>Edit</button>
+
+                                                <button className='btn btn-primary my-1' onClick={() => handleDelete(customer._id)}>Delete</button>
                                             </td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
-                        </div> */}
+                        </div>
                     </div>
                 </div>
 
