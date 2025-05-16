@@ -25,6 +25,7 @@ function Dashboard() {
         totalBookings: 0,
         totalRevenue: 0,
     });
+
     const [bookingTrends, setBookingTrends] = useState([]);
 
     useEffect(() => {
@@ -96,7 +97,11 @@ function Dashboard() {
                             <div className="row mt-4">
                                 <div className="col-md-12">
                                     <h5>Bookings Trend</h5>
-                                    <Line data={chartData} />
+                                    {bookingTrends.length > 0 ? (
+                                        <Line data={chartData} />
+                                    ) : (
+                                        <p>No booking trend data available.</p>
+                                    )}
                                 </div>
                             </div>
                         </div>
