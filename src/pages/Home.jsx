@@ -1,5 +1,5 @@
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import Navigation from '../components/Navigation';
 import Footer from '../components/Footer'
 import heroImage from '../assets/hero-cover.jpg'
@@ -28,6 +28,26 @@ function Home() {
                     height: '90vh',
                     position: 'relative'
                 }}></div>
+
+            <div className="container py-5">
+                <div className="text-center my-5">
+                    <h1 className="display-5 fw-bold">
+                        Who We Are
+                    </h1>
+                    <p className="lead mt-3">
+                        Welcome to RENTEFI — a smart, reliable, and modern car rental solution, built using the MERN Stack with a clean Bootstrap UI. <strong>RENTEFI</strong> is a student-built full-stack car rental platform focused on simplifying the car rental experience.
+                        We bridge the gap between renters and providers through a transparent, efficient, and user-centric solution.
+                    </p>
+                    <p className='lead mt-3'>
+                        <div className='row'>
+                            <div className="offset-md-3 col-md-6 d-flex">
+                                <button className="btn btn-small text-white bg-primary px-2 mx-4" onClick={() => navigate('/cars')}>Book Now</button>
+                                <button className="btn btn-small text-white bg-primary px-2 mx-4" onClick={() => navigate('/contact')}>Contact Us</button>
+                            </div>
+                        </div>
+                    </p>
+                </div>
+            </div>
 
             <Footer />
         </>
