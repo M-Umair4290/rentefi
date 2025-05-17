@@ -73,7 +73,7 @@ function Signup() {
 
                             <button type='submit' className='my-4'>Signup</button>
                             <p className='text-center fs-6'>Already have an account? <Link to="/login">Login</Link></p>
-                            <p className='text-center fs-6'><Link to="/signup">Back to Homepage</Link></p>
+                            <p className='text-center fs-6'><Link to="/">Back to Homepage</Link></p>
                         </form>
                     </div>
                 </div>
