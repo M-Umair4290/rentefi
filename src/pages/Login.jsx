@@ -38,7 +38,7 @@ function Login() {
         <>
             <div className='container-fluid'>
                 <div className='row vh-100'>
-                    <div className={`col-6  ${styles.logincover}`}>
+                    <div className={`col-md-6  ${styles.logincover}`}>
                     </div>
 
 
@@ -55,6 +55,7 @@ function Login() {
 
                             <button type='submit' className='my-4'>Login</button>
                             <p className='text-center fs-6'>Don't have an account? <Link to="/signup">Signup now</Link></p>
+                            <p className='text-center fs-6'><Link to="/signup">Back to Homepage</Link></p>
                         </form>
                     </div>
                 </div>

@@ -11,7 +11,6 @@ function Signup() {
     const [cnic, setCnic] = useState('');
     const [mobile, setMobile] = useState('');
     const [email, setEmail] = useState('');
-    const [dob, setDob] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
@@ -31,7 +30,6 @@ function Signup() {
             cnic,
             mobile,
             email,
-            dob,
             password
         };
 
@@ -53,7 +51,7 @@ function Signup() {
                     </div>
 
 
-                    <div className='col-6 d-flex align-items-center justify-content-evenly'>
+                    <div className='col-6 d-flex align-items-center justify-content-evenly py-5'>
                         <form className='d-flex flex-column justify-content-center' onSubmit={handleSubmit}>
                             <h1>Signup</h1>
                             <p>Create your Rentefi account and join us today!</p>
@@ -70,13 +68,12 @@ function Signup() {
 
                             <input className='my-2' type='password' name='confirmpassword' size={40} placeholder='Confirm Password' value={confirmPassword} required onChange={(event) => setConfirmPassword(event.target.value)}></input>
 
-                            <input className='my-2' type='date' name='dateofbirth' size={40} placeholder='Date of birth' value={dob} required onChange={(event) => setDob(event.target.value)}></input>
-
                             {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
                             {success && <p style={{ color: 'green', marginTop: '10px' }}>{success}</p>}
 
                             <button type='submit' className='my-4'>Signup</button>
                             <p className='text-center fs-6'>Already have an account? <Link to="/login">Login</Link></p>
+                            <p className='text-center fs-6'><Link to="/signup">Back to Homepage</Link></p>
                         </form>
                     </div>
                 </div>
