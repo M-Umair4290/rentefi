@@ -5,21 +5,17 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { FaUserCircle } from "react-icons/fa";
 
 function Navbar() {
-
     const navigate = useNavigate();
-
-    // Check if user is logged in
-    // const user = JSON.parse(localStorage.getItem('user'));
 
     let user = null;
     try {
-        user = JSON.parse(localStorage.getItem('user'));
+        user = JSON.parse(localStorage.getItem('currentUser'));
     } catch (e) {
         console.error('Failed to parse user from localStorage:', e);
     }
 
     const handleLogout = () => {
-        localStorage.removeItem('user');
+        localStorage.removeItem('currentUser');
         navigate('/login');
     };
 
@@ -32,17 +28,12 @@ function Navbar() {
                     <div className='dropdown'>
                         <button className='btn text-light dropdown-toggle d-flex align-items-center border-0 bg-dark' type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
                             <span><FaUserCircle size={25} /></span>
-                            {/* <FaUserCircle size={24} className="me-1" /> */}
-                            {/* <span>Admin</span> */}
+                            {user && <span className="ms-2">{user.username}</span>}
                         </button>
 
                         <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
                             {user ? (
                                 <>
-                                    {/* <li><Link className="dropdown-item" to="/profile">Profile</Link></li> */}
-
-                                    {/* <li><Link className="dropdown-item" to="/settings">Settings</Link></li> */}
-
                                     <li><button className="dropdown-item text-danger" onClick={handleLogout}>Logout</button></li>
                                 </>
                             ) : (
