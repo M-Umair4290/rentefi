@@ -6,7 +6,7 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 function Sidebar() {
     return (
         <>
-            <div className='d-flex'>
+            <div className='d-flex' style={{ height: '100%', minHeight: '100vh' }}>
 
                 <div className='bg-dark text-light' style={{ width: '100%', minHeight: '100vh' }}>
 
