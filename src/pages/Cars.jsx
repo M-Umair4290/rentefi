@@ -34,6 +34,7 @@ function Cars() {
                                     <h5 className="card-title text-primary fw-bold">{car.name}</h5>
                                     <p className="card-text text-muted">Model Year: {car.modelYear}</p>
                                     <p className="card-text text-muted">Price per Day: ${car.pricePerDay}</p>
+                                    <p className="card-text text-muted">Status: <span className={car.available ? 'text-muted' : 'text-danger'}>{car.available ? 'Available' : 'Booked'}</span></p>
                                     <Link
                                         to={`/cars/${car._id}`}
                                         className="btn btn-primary w-100 py-2 rounded-3 mt-3">

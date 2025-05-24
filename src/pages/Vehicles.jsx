@@ -8,6 +8,7 @@ import Sidebar from '../components/Sidebar';
 function Vehicles() {
     const [vehicles, setVehicles] = useState([]);
     const [error, setError] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
     // For modal edit
 
@@ -122,6 +123,40 @@ function Vehicles() {
         }
     };
 
+    const handleDelete = async (id) => {
+        if (window.confirm('Are you sure you want to delete this vehicle?')) {
+            try {
+                await axios.delete(`https://car-backend-production.up.railway.app/api/cars/${id}`);
+                fetchVehicles(); // Refresh list
+                setMessage('Vehicle deleted successfully!');
+            } catch (err) {
+                console.error(err);
+                setError('Failed to delete vehicle.');
+            }
+        }
+    };
+
+    // Add filtered vehicles computation
+    const filteredVehicles = vehicles.filter(car => {
+        const searchLower = searchTerm.toLowerCase();
+        return (
+            car.name?.toLowerCase().includes(searchLower) ||
+            car.brand?.toLowerCase().includes(searchLower) ||
+            car.numPlate?.toLowerCase().includes(searchLower) ||
+            car.category?.toLowerCase().includes(searchLower) ||
+            car.fuelType?.toLowerCase().includes(searchLower) ||
+            car.transmission?.toLowerCase().includes(searchLower)
+        );
+    });
+
+    const handleModalClick = (e) => {
+        // Close modal if clicking outside the modal content
+        if (e.target.classList.contains('modal-backdrop')) {
+            setShowAddModal(false);
+            setEditingVehicle(null);
+        }
+    };
+
     return (
         <>
             <Navbar />
@@ -134,13 +169,32 @@ function Vehicles() {
                     <div className='col-9 p-3 overflow-scroll'>
                         {error && <div className="alert alert-danger">{error}</div>}
 
-                        <div className="d-flex justify-content-end mb-3">
-                            <button className="btn btn-success" onClick={() => setShowAddModal(true)}>
-                                + Add Vehicle
-                            </button>
+                        <div className="d-flex justify-content-between align-items-center mb-4">
+                            <h2>Vehicles</h2>
+                            <div className="d-flex align-items-center gap-3">
+                                <div className="search-box position-relative">
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        placeholder="Search vehicles..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        style={{ paddingLeft: '35px', minWidth: '250px' }}
+                                    />
+                                    <i className="fas fa-search position-absolute"
+                                        style={{ left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#6c757d' }}></i>
+                                </div>
+                                <button
+                                    className="btn btn-success rounded-circle d-flex align-items-center justify-content-center"
+                                    onClick={() => setShowAddModal(true)}
+                                    style={{ width: '40px', height: '40px' }}
+                                >
+                                    <i className="fas fa-plus"></i>
+                                </button>
+                            </div>
                         </div>
 
-                        <table className='' >
+                        <table className='table table-bordered' >
                             <thead>
                                 <tr className='border p-2'>
                                     <th className='border p-3'>Image</th>
@@ -156,13 +210,15 @@ function Vehicles() {
                                 </tr>
                             </thead>
 
-                            <tbody>
-                                {vehicles.length === 0 ? (
+                            <tbody className='border'>
+                                {filteredVehicles.length === 0 ? (
                                     <tr>
-                                        <td colSpan="10" className="text-center">No vehicles available</td>
+                                        <td colSpan="10" className="text-center">
+                                            {searchTerm ? 'No matching vehicles found' : 'No vehicles available'}
+                                        </td>
                                     </tr>
                                 ) : (
-                                    vehicles.map(car => (
+                                    filteredVehicles.map(car => (
                                         <tr key={car._id}>
                                             <td><img src={car.carImage} alt={`${car.name} Photo`} width={'100px'} /></td>
                                             <td>{car.name}</td>
@@ -178,8 +234,11 @@ function Vehicles() {
                                                 </span>
                                             </td>
                                             <td>
-                                                <button className='btn btn-primary' onClick={() => handleEditClick(car)}>
-                                                    Edit
+                                                <button className='btn btn-link text-primary p-0' onClick={() => handleEditClick(car)}>
+                                                    <i className="fas fa-pencil-alt"></i>
+                                                </button>
+                                                <button className='btn btn-link text-danger p-0' onClick={() => handleDelete(car._id)}>
+                                                    <i className="fas fa-trash"></i>
                                                 </button>
                                             </td>
                                         </tr>
@@ -190,91 +249,108 @@ function Vehicles() {
 
                         {/* Add Vehicle Modal */}
                         {showAddModal && (
-                            <div style={modalOverlayStyle}>
-                                <div style={modalStyle}>
-                                    <h2>Add New Vehicle</h2>
-                                    {addMessage && <div className="alert alert-success">{addMessage}</div>}
-                                    {addError && <div className="alert alert-danger">{addError}</div>}
-
-                                    <form onSubmit={handleAddSubmit}>
-                                        <input type="text" name="name" placeholder="Name" onChange={handleAddChange} value={addFormData.name} required />
-                                        <input type="text" name="modelYear" placeholder="Year" onChange={handleAddChange} value={addFormData.modelYear} required />
-                                        <input type="text" name="brand" placeholder="Brand" onChange={handleAddChange} value={addFormData.brand} required />
-                                        <input type="text" name="numPlate" placeholder="Vehicle ID / Number Plate" onChange={handleAddChange} value={addFormData.numPlate} required />
-                                        <input type="text" name="category" placeholder="Category" onChange={handleAddChange} value={addFormData.category} required />
-                                        <input type="text" name="fuelType" placeholder="Type" onChange={handleAddChange} value={addFormData.fuelType} required />
-                                        <input type="number" name="seats" placeholder="Seats" onChange={handleAddChange} value={addFormData.seats} required />
-                                        <input type="text" name="transmission" placeholder="Transmission" onChange={handleAddChange} value={addFormData.transmission} required />
-                                        <input type="number" name="pricePerDay" placeholder="Rate Per Day" onChange={handleAddChange} value={addFormData.pricePerDay} required />
-                                        <input type="text" name="carImage" placeholder="Image URL" onChange={handleAddChange} value={addFormData.carImage} required />
-                                        <select name="available" className='my-3' value={String(addFormData.available)} onChange={handleAddChange}>
-                                            <option value="true">Available</option>
-                                            <option value="false">Unavailable</option>
-                                        </select>
-
-                                        <div style={{ marginTop: '1rem' }}>
-                                            <button type="submit" className="btn btn-success me-2">
-                                                Add Vehicle
-                                            </button>
-                                            <button type="button" className="btn btn-secondary" onClick={() => setShowAddModal(false)}>
-                                                Cancel
-                                            </button>
+                            <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                                <div className="modal-dialog">
+                                    <div className="modal-content">
+                                        <div className="modal-header">
+                                            <h5 className="modal-title">Add New Vehicle</h5>
+                                            <button type="button" className="btn-close" onClick={() => setShowAddModal(false)}></button>
                                         </div>
-                                    </form>
+                                        <div className="modal-body">
+                                            {addMessage && <div className="alert alert-success">{addMessage}</div>}
+                                            {addError && <div className="alert alert-danger">{addError}</div>}
+                                            <form onSubmit={handleAddSubmit}>
+                                                <div className="mb-3">
+                                                    <input type="text" name="name" className="form-control" placeholder="Name" onChange={handleAddChange} value={addFormData.name} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input type="text" name="modelYear" className="form-control" placeholder="Year" onChange={handleAddChange} value={addFormData.modelYear} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input type="text" name="brand" className="form-control" placeholder="Brand" onChange={handleAddChange} value={addFormData.brand} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input type="text" name="numPlate" className="form-control" placeholder="Vehicle ID / Number Plate" onChange={handleAddChange} value={addFormData.numPlate} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input type="text" name="category" className="form-control" placeholder="Category" onChange={handleAddChange} value={addFormData.category} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input type="text" name="fuelType" className="form-control" placeholder="Type" onChange={handleAddChange} value={addFormData.fuelType} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input type="number" name="seats" className="form-control" placeholder="Seats" onChange={handleAddChange} value={addFormData.seats} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input type="text" name="transmission" className="form-control" placeholder="Transmission" onChange={handleAddChange} value={addFormData.transmission} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input type="number" name="pricePerDay" className="form-control" placeholder="Rate Per Day" onChange={handleAddChange} value={addFormData.pricePerDay} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input type="text" name="carImage" className="form-control" placeholder="Image URL" onChange={handleAddChange} value={addFormData.carImage} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <select name="available" className="form-control" value={String(addFormData.available)} onChange={handleAddChange}>
+                                                        <option value="true">Available</option>
+                                                        <option value="false">Unavailable</option>
+                                                    </select>
+                                                </div>
+                                                <button type="submit" className="btn btn-primary">Add Vehicle</button>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )}
 
-                        {/* Modal */}
+                        {/* Edit Vehicle Modal */}
                         {editingVehicle && (
-                            <div
-                                style={{
-                                    position: 'fixed',
-                                    top: 0, left: 0, right: 0, bottom: 0,
-                                    backgroundColor: 'rgba(0,0,0,0.5)',
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    zIndex: 1000,
-                                }}
-                            >
-                                <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', width: '400px', position: 'relative' }}>
-                                    <button onClick={handleCloseModal} style={{
-                                        position: 'absolute',
-                                        top: 10,
-                                        right: 10,
-                                        border: 'none',
-                                        background: 'none',
-                                        fontSize: '20px',
-                                        color: 'black',
-                                        cursor: 'pointer',
-                                        width: '24px',       // restrict width
-                                        height: '24px',      // restrict height
-                                        lineHeight: '24px',  // center the × vertically
-                                        textAlign: 'center',
-                                        padding: 0,
-                                        margin: 0,
-                                    }}>×</button>
-                                    <h2>Edit Vehicle</h2>
-                                    {message && <div className="alert alert-success">{message}</div>}
-                                    {editError && <div className="alert alert-danger">{editError}</div>}
-                                    <form onSubmit={handleSubmit}>
-                                        <input type="text" name="name" placeholder="Name" value={editingVehicle.name} onChange={handleChange} required />
-                                        <input type="text" name="modelYear" placeholder="Year" value={editingVehicle.modelYear} onChange={handleChange} required />
-                                        <input type="text" name="numPlate" placeholder="Vehicle ID / Number Plate" value={editingVehicle.numPlate} onChange={handleChange} required />
-                                        <input type="text" name="fuelType" placeholder="Type" value={editingVehicle.fuelType} onChange={handleChange} required />
-                                        <input type="number" name="seats" placeholder="Seats" value={editingVehicle.seats} onChange={handleChange} required />
-                                        <input type="text" name="transmission" placeholder="Transmission" value={editingVehicle.transmission} onChange={handleChange} required />
-                                        <input type="number" name="pricePerDay" placeholder="Rate Per Day" value={editingVehicle.pricePerDay} onChange={handleChange} required />
-                                        <input type="text" name="carImage" placeholder="Image URL" value={editingVehicle.carImage} onChange={handleChange} required />
-                                        <br />
-                                        <select name="available" className='my-3' value={String(editingVehicle.available)} onChange={handleChange}>
-                                            <option value="true">Available</option>
-                                            <option value="false">Unavailable</option>
-                                        </select>
-                                        <br />
-                                        <button type="submit" className="btn btn-success mt-2">Update Vehicle</button>
-                                    </form>
+                            <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                                <div className="modal-dialog">
+                                    <div className="modal-content">
+                                        <div className="modal-header">
+                                            <h5 className="modal-title">Edit Vehicle</h5>
+                                            <button type="button" className="btn-close" onClick={handleCloseModal}></button>
+                                        </div>
+                                        <div className="modal-body">
+                                            {message && <div className="alert alert-success">{message}</div>}
+                                            {editError && <div className="alert alert-danger">{editError}</div>}
+                                            <form onSubmit={handleSubmit}>
+                                                <div className="mb-3">
+                                                    <input type="text" name="name" className="form-control" placeholder="Name" value={editingVehicle.name} onChange={handleChange} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input type="text" name="modelYear" className="form-control" placeholder="Year" value={editingVehicle.modelYear} onChange={handleChange} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input type="text" name="numPlate" className="form-control" placeholder="Vehicle ID / Number Plate" value={editingVehicle.numPlate} onChange={handleChange} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input type="text" name="fuelType" className="form-control" placeholder="Type" value={editingVehicle.fuelType} onChange={handleChange} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input type="number" name="seats" className="form-control" placeholder="Seats" value={editingVehicle.seats} onChange={handleChange} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input type="text" name="transmission" className="form-control" placeholder="Transmission" value={editingVehicle.transmission} onChange={handleChange} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input type="number" name="pricePerDay" className="form-control" placeholder="Rate Per Day" value={editingVehicle.pricePerDay} onChange={handleChange} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input type="text" name="carImage" className="form-control" placeholder="Image URL" value={editingVehicle.carImage} onChange={handleChange} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <select name="available" className="form-control" value={String(editingVehicle.available)} onChange={handleChange}>
+                                                        <option value="true">Available</option>
+                                                        <option value="false">Unavailable</option>
+                                                    </select>
+                                                </div>
+                                                <button type="submit" className="btn btn-primary">Update Vehicle</button>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )}

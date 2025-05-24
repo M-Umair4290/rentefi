@@ -6,97 +6,257 @@ import Footer from '../components/Footer';
 import Sidebar from '../components/Sidebar';
 
 function Bookings() {
-
     const navigate = useNavigate();
-    const handleLogout = () => {
-        localStorage.removeItem('user');
-        navigate('/login');
-    };
-
     const [bookings, setBookings] = useState([]);
     const [cars, setCars] = useState([]);
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [editingBooking, setEditingBooking] = useState(null);
+    const [message, setMessage] = useState('');
+    const [error, setError] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
 
-    // Fetch bookings and car details
+    // Form data for adding new booking
+    const [addFormData, setAddFormData] = useState({
+        carId: '',
+        customerName: '',
+        customerEmail: '',
+        customerPhone: '',
+        cnic: '',
+        startDate: '',
+        endDate: '',
+        totalPrice: '',
+        status: 'Pending',
+        overtimeRate: '350/hr',
+        tripType: 'inCity'
+    });
+
     useEffect(() => {
-        const fetchBookings = async () => {
-            try {
-                const res = await axios.get('https://car-backend-production.up.railway.app/api/bookings'); // Replace with your actual endpoint
-                setBookings(res.data);
-            } catch (error) {
-                console.error('Error fetching bookings:', error);
-            }
-        };
-
-        const fetchCars = async () => {
-            try {
-                const res = await axios.get('https://car-backend-production.up.railway.app/api/cars'); // To resolve carId -> carName
-                setCars(res.data);
-            } catch (error) {
-                console.error('Error fetching cars:', error);
-            }
-        };
-
         fetchBookings();
         fetchCars();
     }, []);
 
-    // Helper to get car name by ID
+    const fetchBookings = async () => {
+        try {
+            const res = await axios.get('https://car-backend-production.up.railway.app/api/bookings');
+            setBookings(res.data);
+        } catch (error) {
+            console.error('Error fetching bookings:', error);
+            setError('Failed to load bookings.');
+        }
+    };
+
+    const fetchCars = async () => {
+        try {
+            const res = await axios.get('https://car-backend-production.up.railway.app/api/cars');
+            setCars(res.data);
+        } catch (error) {
+            console.error('Error fetching cars:', error);
+        }
+    };
+
     const getCarName = (id) => {
         const car = cars.find(car => car._id === id);
         return car ? car.name : 'Loading...';
     };
 
+    const handleAddChange = (e) => {
+        const { name, value } = e.target;
+        setAddFormData(prev => {
+            const newData = { ...prev, [name]: value };
+
+            // Calculate total price when either car or dates change
+            if (name === 'carId' || name === 'startDate' || name === 'endDate') {
+                if (newData.carId && newData.startDate && newData.endDate) {
+                    const selectedCar = cars.find(car => car._id === newData.carId);
+                    if (selectedCar) {
+                        const start = new Date(newData.startDate);
+                        const end = new Date(newData.endDate);
+                        const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+                        if (days > 0) {
+                            newData.totalPrice = days * selectedCar.pricePerDay;
+                        }
+                    }
+                }
+            }
+
+            return newData;
+        });
+    };
+
+    const handleEditChange = (e) => {
+        const { name, value } = e.target;
+        setEditingBooking(prev => {
+            const newData = { ...prev, [name]: value };
+
+            // Calculate total price when either car or dates change
+            if (name === 'carId' || name === 'startDate' || name === 'endDate') {
+                if (newData.carId && newData.startDate && newData.endDate) {
+                    const selectedCar = cars.find(car => car._id === newData.carId);
+                    if (selectedCar) {
+                        const start = new Date(newData.startDate);
+                        const end = new Date(newData.endDate);
+                        const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+                        if (days > 0) {
+                            newData.totalPrice = days * selectedCar.pricePerDay;
+                        }
+                    }
+                }
+            }
+
+            return newData;
+        });
+    };
+
+    const handleAddSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            await axios.post('https://car-backend-production.up.railway.app/api/bookings', addFormData);
+            setMessage('Booking added successfully!');
+            setError('');
+            setShowAddModal(false);
+            fetchBookings();
+            // Reset form
+            setAddFormData({
+                carId: '',
+                customerName: '',
+                customerEmail: '',
+                customerPhone: '',
+                cnic: '',
+                startDate: '',
+                endDate: '',
+                totalPrice: '',
+                status: 'Pending',
+                overtimeRate: '350/hr',
+                tripType: 'inCity'
+            });
+        } catch (err) {
+            console.error(err);
+            setError('Failed to add booking.');
+            setMessage('');
+        }
+    };
+
+    const handleEditSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            await axios.put(`https://car-backend-production.up.railway.app/api/bookings/${editingBooking._id}`, editingBooking);
+            setMessage('Booking updated successfully!');
+            setError('');
+            setEditingBooking(null);
+            fetchBookings();
+        } catch (err) {
+            console.error(err);
+            setError('Failed to update booking.');
+            setMessage('');
+        }
+    };
+
+    const handleDelete = async (id) => {
+        if (window.confirm('Are you sure you want to delete this booking?')) {
+            try {
+                await axios.delete(`https://car-backend-production.up.railway.app/api/bookings/${id}`);
+                setMessage('Booking deleted successfully!');
+                fetchBookings();
+            } catch (err) {
+                console.error(err);
+                setError('Failed to delete booking.');
+            }
+        }
+    };
+
     const handleApprove = async (id) => {
         try {
-            await axios.put(`https://car-backend-production.up.railway.app/api/bookings/${id}/approve`);
-            setBookings(prev => prev.map(b => b._id === id ? { ...b, status: 'Approved' } : b));
+            await axios.put(`https://car-backend-production.up.railway.app/api/bookings/${id}`, {
+                status: 'Confirmed'
+            });
+            setMessage('Booking approved successfully!');
+            fetchBookings();
         } catch (error) {
             console.error('Approval failed:', error);
+            setError('Failed to approve booking.');
         }
     };
 
     const handleReject = async (id) => {
         try {
-            await axios.put(`https://car-backend-production.up.railway.app/api/bookings/${id}/reject`);
-            setBookings(prev => prev.map(b => b._id === id ? { ...b, status: 'Rejected' } : b));
+            await axios.put(`https://car-backend-production.up.railway.app/api/bookings/${id}`, {
+                status: 'Cancelled'
+            });
+            setMessage('Booking rejected successfully!');
+            fetchBookings();
         } catch (error) {
             console.error('Rejection failed:', error);
+            setError('Failed to reject booking.');
         }
     };
 
-    // const [bookings, setBookings] = useState([]);
+    const getStatusBadgeClass = (status) => {
+        status = status.toLowerCase();
+        if (status === 'pending') return 'bg-warning';
+        if (status === 'confirmed') return 'bg-success';
+        if (status === 'cancelled') return 'bg-danger';
+        return 'bg-secondary';
+    };
 
-    // useEffect(() => {
-    //     axios.get('/api/bookings') // Get all bookings data from API
-    //         .then(response => setBookings(response.data))
-    //         .catch(error => console.error(error));
-    // }, []);
+    // Add filtered bookings computation
+    const filteredBookings = bookings.filter(booking => {
+        const searchLower = searchTerm.toLowerCase();
+        return (
+            booking.customerName?.toLowerCase().includes(searchLower) ||
+            booking.customerEmail?.toLowerCase().includes(searchLower) ||
+            booking.customerPhone?.toLowerCase().includes(searchLower) ||
+            booking.cnic?.toLowerCase().includes(searchLower) ||
+            getCarName(booking.carId)?.toLowerCase().includes(searchLower) ||
+            booking.status?.toLowerCase().includes(searchLower)
+        );
+    });
 
-    // const handleStatusUpdate = (bookingId, newStatus) => {
-    //     axios.put(`/api/bookings/${bookingId}`, { status: newStatus })
-    //         .then(response => {
-    //             // Update the booking status in the UI after success
-    //             const updatedBookings = bookings.map(booking =>
-    //                 booking._id === bookingId ? { ...booking, status: newStatus } : booking
-    //             );
-    //             setBookings(updatedBookings);
-    //         })
-    //         .catch(error => console.error(error));
-    // };
-
+    const handleModalClick = (e) => {
+        // Close modal if clicking outside the modal content
+        if (e.target.classList.contains('modal-backdrop')) {
+            setShowAddModal(false);
+            setEditingBooking(null);
+        }
+    };
 
     return (
         <>
             <Navbar />
-
             <div className="container-fluid px-0 overflow-hidden">
                 <div className="row">
                     <div className="col-3">
                         <Sidebar />
                     </div>
 
-                    <div className="col-9">
-                        <h2 className="mb-4">Bookings</h2>
+                    <div className="col-9 p-4">
+                        <div className="d-flex justify-content-between align-items-center mb-4">
+                            <h2>Bookings</h2>
+                            <div className="d-flex align-items-center gap-3">
+                                <div className="search-box position-relative">
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        placeholder="Search bookings..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        style={{ paddingLeft: '35px', minWidth: '250px' }}
+                                    />
+                                    <i className="fas fa-search position-absolute"
+                                        style={{ left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#6c757d' }}></i>
+                                </div>
+                                <button
+                                    className="btn btn-success rounded-circle d-flex align-items-center justify-content-center"
+                                    onClick={() => setShowAddModal(true)}
+                                    style={{ width: '40px', height: '40px' }}
+                                >
+                                    <i className="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        {message && <div className="alert alert-success">{message}</div>}
+                        {error && <div className="alert alert-danger">{error}</div>}
+
                         <table className="table table-bordered">
                             <thead>
                                 <tr>
@@ -107,72 +267,164 @@ function Bookings() {
                                     <th>Return Date</th>
                                     <th>Total Price</th>
                                     <th>Status</th>
-                                    <th>Action</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {bookings.map(booking => (
-                                    <tr key={booking._id}>
-                                        <td>{getCarName(booking.carId)}</td>
-                                        <td>{booking.customerName}</td>
-                                        <td>{booking.customerPhone}</td>
-                                        <td>{new Date(booking.startDate).toLocaleDateString()}</td>
-                                        <td>{new Date(booking.endDate).toLocaleDateString()}</td>
-                                        <td>{booking.totalPrice} PKR</td>
-                                        <td>{booking.status}</td>
-                                        <td>
-                                            <button className="btn btn-success btn-sm me-1" onClick={() => handleApprove(booking._id)} disabled={booking.status.toLowerCase() !== 'pending'}>
-                                                Approve
-                                            </button>
-                                            <button className="btn btn-danger btn-sm" onClick={() => handleReject(booking._id)} disabled={booking.status.toLowerCase() !== 'pending'}>
-                                                Reject
-                                            </button>
+                                {filteredBookings.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="8" className="text-center">
+                                            {searchTerm ? 'No matching bookings found' : 'No bookings found'}
                                         </td>
                                     </tr>
-                                ))}
+                                ) : (
+                                    filteredBookings.map(booking => (
+                                        <tr key={booking._id}>
+                                            <td>{getCarName(booking.carId)}</td>
+                                            <td>{booking.customerName}</td>
+                                            <td>{booking.customerPhone}</td>
+                                            <td>{new Date(booking.startDate).toLocaleDateString()}</td>
+                                            <td>{new Date(booking.endDate).toLocaleDateString()}</td>
+                                            <td>{booking.totalPrice} PKR</td>
+                                            <td>
+                                                <span className={`badge ${getStatusBadgeClass(booking.status)}`}>
+                                                    {booking.status}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <button className='btn btn-link text-primary p-0 me-2' onClick={() => setEditingBooking(booking)}>
+                                                    <i className="fas fa-pencil-alt"></i>
+                                                </button>
+                                                <button className='btn btn-link text-danger p-0 me-2' onClick={() => handleDelete(booking._id)}>
+                                                    <i className="fas fa-trash"></i>
+                                                </button>
+                                                {booking.status.toLowerCase() === 'pending' && (
+                                                    <>
+                                                        <button className='btn btn-link text-success p-0 me-2' onClick={() => handleApprove(booking._id)}>
+                                                            <i className="fas fa-check"></i>
+                                                        </button>
+                                                        <button className='btn btn-link text-danger p-0' onClick={() => handleReject(booking._id)}>
+                                                            <i className="fas fa-times"></i>
+                                                        </button>
+                                                    </>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
                             </tbody>
                         </table>
 
+                        {/* Add Booking Modal */}
+                        {showAddModal && (
+                            <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                                <div className="modal-dialog">
+                                    <div className="modal-content">
+                                        <div className="modal-header">
+                                            <h5 className="modal-title">Add New Booking</h5>
+                                            <button type="button" className="btn-close" onClick={() => setShowAddModal(false)}></button>
+                                        </div>
+                                        <div className="modal-body">
+                                            <form onSubmit={handleAddSubmit}>
+                                                <div className="mb-3">
+                                                    <select name="carId" className="form-control" onChange={handleAddChange} required>
+                                                        <option value="">Select Car</option>
+                                                        {cars.map(car => (
+                                                            <option key={car._id} value={car._id}>{car.name}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input type="text" name="customerName" className="form-control" placeholder="Customer Name" onChange={handleAddChange} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input type="email" name="customerEmail" className="form-control" placeholder="Customer Email" onChange={handleAddChange} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input type="text" name="customerPhone" className="form-control" placeholder="Phone Number" onChange={handleAddChange} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input type="text" name="cnic" className="form-control" placeholder="CNIC" onChange={handleAddChange} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input type="date" name="startDate" className="form-control" onChange={handleAddChange} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input type="date" name="endDate" className="form-control" onChange={handleAddChange} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <label className="form-label">Total Price</label>
+                                                    <input type="text" className="form-control" value={`${addFormData.totalPrice || 0} PKR`} disabled />
+                                                </div>
+                                                <button type="submit" className="btn btn-primary">Add Booking</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
-                        {/* <div className="container">
-                            <h3>Bookings List</h3>
-                            <table className="table">
-                                <thead>
-                                    <tr>
-                                        <th>Booking ID</th>
-                                        <th>Customer</th>
-                                        <th>Car Model</th>
-                                        <th>Rental Dates</th>
-                                        <th>Status</th>
-                                        <th>Total Price</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {bookings.map(booking => (
-                                        <tr key={booking._id}>
-                                            <td>{booking.bookingId}</td>
-                                            <td>{booking.customerName}</td>
-                                            <td>{booking.carModel}</td>
-                                            <td>{booking.startDate} - {booking.endDate}</td>
-                                            <td>{booking.status}</td>
-                                            <td>{booking.totalPrice}</td>
-                                            <td>
-                                                <button onClick={() => handleStatusUpdate(booking._id, 'Confirmed')}>Confirm</button>
-                                                <button onClick={() => handleStatusUpdate(booking._id, 'Canceled')}>Cancel</button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div> */}
+                        {/* Edit Booking Modal */}
+                        {editingBooking && (
+                            <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                                <div className="modal-dialog">
+                                    <div className="modal-content">
+                                        <div className="modal-header">
+                                            <h5 className="modal-title">Edit Booking</h5>
+                                            <button type="button" className="btn-close" onClick={() => setEditingBooking(null)}></button>
+                                        </div>
+                                        <div className="modal-body">
+                                            <form onSubmit={handleEditSubmit}>
+                                                <div className="mb-3">
+                                                    <select name="carId" className="form-control" value={editingBooking.carId} onChange={handleEditChange} required>
+                                                        <option value="">Select Car</option>
+                                                        {cars.map(car => (
+                                                            <option key={car._id} value={car._id}>{car.name}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input type="text" name="customerName" className="form-control" placeholder="Customer Name" value={editingBooking.customerName} onChange={handleEditChange} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input type="email" name="customerEmail" className="form-control" placeholder="Customer Email" value={editingBooking.customerEmail} onChange={handleEditChange} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input type="text" name="customerPhone" className="form-control" placeholder="Phone Number" value={editingBooking.customerPhone} onChange={handleEditChange} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input type="text" name="cnic" className="form-control" placeholder="CNIC" value={editingBooking.cnic} onChange={handleEditChange} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input type="date" name="startDate" className="form-control" value={editingBooking.startDate.split('T')[0]} onChange={handleEditChange} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input type="date" name="endDate" className="form-control" value={editingBooking.endDate.split('T')[0]} onChange={handleEditChange} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <label className="form-label">Total Price</label>
+                                                    <input type="text" className="form-control" value={`${editingBooking.totalPrice || 0} PKR`} disabled />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <select name="status" className="form-control" value={editingBooking.status} onChange={handleEditChange}>
+                                                        <option value="Pending">Pending</option>
+                                                        <option value="Confirmed">Confirmed</option>
+                                                        <option value="Cancelled">Cancelled</option>
+                                                    </select>
+                                                </div>
+                                                <button type="submit" className="btn btn-primary">Update Booking</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
-
             <Footer />
         </>
-    )
+    );
 }
 
-export default Bookings
+export default Bookings;
