@@ -68,7 +68,7 @@ function Vehicles() {
             setUploadingImage(true);
             const formData = new FormData();
             formData.append('file', file);
-            formData.append('upload_preset', 'rentefi_app'); // Replace with your upload preset name
+            formData.append('upload_preset', 'rentefi_app');
 
             const response = await axios.post(
                 'https://api.cloudinary.com/v1_1/dxssblapo/image/upload',
