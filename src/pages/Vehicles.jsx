@@ -10,6 +10,7 @@ function Vehicles() {
     const [vehicles, setVehicles] = useState([]);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
 
     // For modal edit
 
@@ -45,11 +46,16 @@ function Vehicles() {
     }, []);
 
     const fetchVehicles = () => {
+        setIsLoading(true);
         axios.get(`https://car-backend-production.up.railway.app/api/cars`)
-            .then(res => setVehicles(res.data))
+            .then(res => {
+                setVehicles(res.data);
+                setIsLoading(false);
+            })
             .catch(err => {
                 console.error(err);
                 setError('Failed to load vehicles data.');
+                setIsLoading(false);
             });
     };
 
@@ -261,7 +267,16 @@ function Vehicles() {
                             </thead>
 
                             <tbody className='border'>
-                                {filteredVehicles.length === 0 ? (
+                                {isLoading ? (
+                                    <tr>
+                                        <td colSpan="10" className="text-center py-4">
+                                            <div className="spinner-border text-primary me-2" role="status">
+                                                <span className="visually-hidden">Loading...</span>
+                                            </div>
+                                            <span>Loading vehicles...</span>
+                                        </td>
+                                    </tr>
+                                ) : filteredVehicles.length === 0 ? (
                                     <tr>
                                         <td colSpan="10" className="text-center">
                                             {searchTerm ? 'No matching vehicles found' : 'No vehicles available'}

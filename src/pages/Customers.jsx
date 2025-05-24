@@ -14,6 +14,7 @@ function Customers() {
     const [error, setError] = useState('');
     const [cars, setCars] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
 
     // Form data for adding new customer booking
     const [addFormData, setAddFormData] = useState({
@@ -36,6 +37,7 @@ function Customers() {
     }, []);
 
     const fetchCustomers = async () => {
+        setIsLoading(true);
         try {
             const response = await axios.get('https://car-backend-production.up.railway.app/api/bookings');
             // Extract unique customers from bookings data
@@ -55,9 +57,11 @@ function Customers() {
                 return acc;
             }, []);
             setCustomers(uniqueCustomers);
+            setIsLoading(false);
         } catch (error) {
             console.error('Error fetching customers:', error);
             setError('Failed to load customers data.');
+            setIsLoading(false);
         }
     };
 
@@ -240,7 +244,16 @@ function Customers() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredCustomers.length === 0 ? (
+                                {isLoading ? (
+                                    <tr>
+                                        <td colSpan="5" className="text-center py-4">
+                                            <div className="spinner-border text-primary me-2" role="status">
+                                                <span className="visually-hidden">Loading...</span>
+                                            </div>
+                                            <span>Loading customers...</span>
+                                        </td>
+                                    </tr>
+                                ) : filteredCustomers.length === 0 ? (
                                     <tr>
                                         <td colSpan="5" className="text-center">
                                             {searchTerm ? 'No matching customers found' : 'No customers found'}

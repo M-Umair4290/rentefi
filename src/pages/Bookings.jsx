@@ -14,6 +14,7 @@ function Bookings() {
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
 
     // Form data for adding new booking
     const [addFormData, setAddFormData] = useState({
@@ -36,12 +37,15 @@ function Bookings() {
     }, []);
 
     const fetchBookings = async () => {
+        setIsLoading(true);
         try {
             const res = await axios.get('https://car-backend-production.up.railway.app/api/bookings');
             setBookings(res.data);
+            setIsLoading(false);
         } catch (error) {
             console.error('Error fetching bookings:', error);
             setError('Failed to load bookings.');
+            setIsLoading(false);
         }
     };
 
@@ -271,7 +275,16 @@ function Bookings() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredBookings.length === 0 ? (
+                                {isLoading ? (
+                                    <tr>
+                                        <td colSpan="8" className="text-center py-4">
+                                            <div className="spinner-border text-primary me-2" role="status">
+                                                <span className="visually-hidden">Loading...</span>
+                                            </div>
+                                            <span>Loading bookings...</span>
+                                        </td>
+                                    </tr>
+                                ) : filteredBookings.length === 0 ? (
                                     <tr>
                                         <td colSpan="8" className="text-center">
                                             {searchTerm ? 'No matching bookings found' : 'No bookings found'}
