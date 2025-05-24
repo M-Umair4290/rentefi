@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios';
+import { Cloudinary } from '@cloudinary/url-gen';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Sidebar from '../components/Sidebar';
@@ -37,6 +38,8 @@ function Vehicles() {
     const [message, setMessage] = useState('');
     const [editError, setEditError] = useState('');
 
+    const [uploadingImage, setUploadingImage] = useState(false);
+
     useEffect(() => {
         fetchVehicles();
     }, []);
@@ -60,12 +63,68 @@ function Vehicles() {
         setEditingVehicle(null);
     };
 
-    // Handle input changes for Add Vehicle form
-    const handleAddChange = (e) => {
-        const { name, value } = e.target;
-        setAddFormData((prev) => ({
+    const handleImageUpload = async (file) => {
+        try {
+            setUploadingImage(true);
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', 'rentefi_app'); // Replace with your upload preset name
+
+            const response = await axios.post(
+                'https://api.cloudinary.com/v1_1/dxssblapo/image/upload',
+                formData
+            );
+
+            return response.data.secure_url;
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            throw new Error('Failed to upload image');
+        } finally {
+            setUploadingImage(false);
+        }
+    };
+
+    const handleAddChange = async (e) => {
+        const { name, value, files } = e.target;
+
+        if (name === 'carImage' && files?.length > 0) {
+            try {
+                const imageUrl = await handleImageUpload(files[0]);
+                setAddFormData(prev => ({
+                    ...prev,
+                    carImage: imageUrl
+                }));
+            } catch (error) {
+                setAddError('Failed to upload image. Please try again.');
+            }
+            return;
+        }
+
+        setAddFormData(prev => ({
             ...prev,
-            [name]: name === 'available' ? value === 'true' : value,
+            [name]: name === "available" ? value === "true" : value
+        }));
+    };
+
+    const handleChange = async (e) => {
+        const { name, value, files } = e.target;
+
+        if (name === 'carImage' && files?.length > 0) {
+            try {
+                const imageUrl = await handleImageUpload(files[0]);
+                setEditingVehicle(prev => ({
+                    ...prev,
+                    carImage: imageUrl
+                }));
+            } catch (error) {
+                setEditError('Failed to upload image. Please try again.');
+            }
+            return;
+        }
+
+        setEditingVehicle(prev => ({
+            ...prev,
+            [name]: name === "available" ? value === "true" : value
         }));
     };
 
@@ -98,15 +157,6 @@ function Vehicles() {
             setAddMessage('');
         }
     };
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setEditingVehicle(prev => ({
-            ...prev,
-            [name]: name === "available" ? value === "true" : value
-        }));
-    };
-
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -288,7 +338,26 @@ function Vehicles() {
                                                     <input type="number" name="pricePerDay" className="form-control" placeholder="Rate Per Day" onChange={handleAddChange} value={addFormData.pricePerDay} required />
                                                 </div>
                                                 <div className="mb-3">
-                                                    <input type="text" name="carImage" className="form-control" placeholder="Image URL" onChange={handleAddChange} value={addFormData.carImage} required />
+                                                    <label className="form-label">Vehicle Image</label>
+                                                    <input
+                                                        type="file"
+                                                        name="carImage"
+                                                        className="form-control"
+                                                        accept="image/*"
+                                                        onChange={handleAddChange}
+                                                        required
+                                                    />
+                                                    {uploadingImage && <div className="text-muted mt-2">Uploading image...</div>}
+                                                    {addFormData.carImage && (
+                                                        <div className="mt-2">
+                                                            <img
+                                                                src={addFormData.carImage}
+                                                                alt="Vehicle preview"
+                                                                style={{ maxWidth: '200px', maxHeight: '150px' }}
+                                                                className="img-thumbnail"
+                                                            />
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 <div className="mb-3">
                                                     <select name="available" className="form-control" value={String(addFormData.available)} onChange={handleAddChange}>
@@ -296,7 +365,9 @@ function Vehicles() {
                                                         <option value="false">Unavailable</option>
                                                     </select>
                                                 </div>
-                                                <button type="submit" className="btn btn-primary">Add Vehicle</button>
+                                                <button type="submit" className="btn btn-primary" disabled={uploadingImage}>
+                                                    {uploadingImage ? 'Uploading...' : 'Add Vehicle'}
+                                                </button>
                                             </form>
                                         </div>
                                     </div>
@@ -339,7 +410,25 @@ function Vehicles() {
                                                     <input type="number" name="pricePerDay" className="form-control" placeholder="Rate Per Day" value={editingVehicle.pricePerDay} onChange={handleChange} required />
                                                 </div>
                                                 <div className="mb-3">
-                                                    <input type="text" name="carImage" className="form-control" placeholder="Image URL" value={editingVehicle.carImage} onChange={handleChange} required />
+                                                    <label className="form-label">Vehicle Image</label>
+                                                    <input
+                                                        type="file"
+                                                        name="carImage"
+                                                        className="form-control"
+                                                        accept="image/*"
+                                                        onChange={handleChange}
+                                                    />
+                                                    {uploadingImage && <div className="text-muted mt-2">Uploading image...</div>}
+                                                    {editingVehicle.carImage && (
+                                                        <div className="mt-2">
+                                                            <img
+                                                                src={editingVehicle.carImage}
+                                                                alt="Vehicle preview"
+                                                                style={{ maxWidth: '200px', maxHeight: '150px' }}
+                                                                className="img-thumbnail"
+                                                            />
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 <div className="mb-3">
                                                     <select name="available" className="form-control" value={String(editingVehicle.available)} onChange={handleChange}>
@@ -347,7 +436,9 @@ function Vehicles() {
                                                         <option value="false">Unavailable</option>
                                                     </select>
                                                 </div>
-                                                <button type="submit" className="btn btn-primary">Update Vehicle</button>
+                                                <button type="submit" className="btn btn-primary" disabled={uploadingImage}>
+                                                    {uploadingImage ? 'Uploading...' : 'Update Vehicle'}
+                                                </button>
                                             </form>
                                         </div>
                                     </div>
