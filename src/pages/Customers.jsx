@@ -15,6 +15,7 @@ function Customers() {
     const [cars, setCars] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isLoading, setIsLoading] = useState(true);
+    const [bookingsData, setBookingsData] = useState([]);
 
     // Form data for adding new customer booking
     const [addFormData, setAddFormData] = useState({
@@ -40,22 +41,43 @@ function Customers() {
         setIsLoading(true);
         try {
             const response = await axios.get('https://car-backend-production.up.railway.app/api/bookings');
-            // Extract unique customers from bookings data
+            setBookingsData(response.data);
+
+            // Extract unique customers based on any available identifier (CNIC, email, or phone)
             const uniqueCustomers = response.data.reduce((acc, booking) => {
-                const existingCustomer = acc.find(c => c.customerEmail === booking.customerEmail);
-                if (!existingCustomer) {
+                // Try to find existing customer by CNIC first, then email, then phone
+                const existingCustomerIndex = acc.findIndex(c =>
+                    (booking.cnic && c.cnic === booking.cnic) ||
+                    (booking.customerEmail && c.customerEmail === booking.customerEmail) ||
+                    (booking.customerPhone && c.customerPhone === booking.customerPhone)
+                );
+
+                if (existingCustomerIndex === -1) {
+                    // Count all non-cancelled bookings for this customer using all possible identifiers
+                    const bookingCount = response.data.filter(b => {
+                        const isMatch = (booking.cnic && b.cnic === booking.cnic) ||
+                            (booking.customerEmail && b.customerEmail === booking.customerEmail) ||
+                            (booking.customerPhone && b.customerPhone === booking.customerPhone);
+                        return isMatch && b.status.toLowerCase() !== 'cancelled';
+                    }).length;
+
                     acc.push({
-                        id: booking._id,
-                        name: booking.customerName,
-                        email: booking.customerEmail,
-                        phone: booking.customerPhone,
-                        cnic: booking.cnic,
-                        // Keep all booking data for editing
-                        ...booking
+                        customerName: booking.customerName || 'N/A',
+                        customerEmail: booking.customerEmail || 'N/A',
+                        customerPhone: booking.customerPhone || 'N/A',
+                        cnic: booking.cnic || 'N/A',
+                        bookingCount: bookingCount,
+                        // Store all identifiers to help with edit/delete operations
+                        identifiers: {
+                            cnic: booking.cnic,
+                            email: booking.customerEmail,
+                            phone: booking.customerPhone
+                        }
                     });
                 }
                 return acc;
             }, []);
+
             setCustomers(uniqueCustomers);
             setIsLoading(false);
         } catch (error) {
@@ -122,9 +144,30 @@ function Customers() {
 
     const handleAddSubmit = async (e) => {
         e.preventDefault();
+
+        // Validation for required fields and formats
+        const phoneRegex = /^[0-9]{4}-[0-9]{7}$/;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const cnicRegex = /^[0-9]{5}-[0-9]{7}-[0-9]$/;
+
+        if (!addFormData.customerPhone || !phoneRegex.test(addFormData.customerPhone)) {
+            setError('Please enter a valid phone number (format: 0300-1234567)');
+            return;
+        }
+
+        if (!addFormData.customerEmail || !emailRegex.test(addFormData.customerEmail)) {
+            setError('Please enter a valid email address');
+            return;
+        }
+
+        if (!addFormData.cnic || !cnicRegex.test(addFormData.cnic)) {
+            setError('Please enter a valid CNIC number (format: 12345-1234567-1)');
+            return;
+        }
+
         try {
             await axios.post('https://car-backend-production.up.railway.app/api/bookings', addFormData);
-            setMessage('Customer added successfully!');
+            setMessage('Customer booking added successfully!');
             setError('');
             setShowAddModal(false);
             fetchCustomers();
@@ -143,36 +186,96 @@ function Customers() {
             });
         } catch (err) {
             console.error(err);
-            setError('Failed to add customer.');
+            setError('Failed to add customer booking.');
             setMessage('');
+        }
+    };
+
+    const handleEditClick = (customer) => {
+        // Find the latest booking for this customer from bookingsData
+        const customerBookings = bookingsData.filter(booking =>
+            (customer.identifiers.cnic && booking.cnic === customer.identifiers.cnic) ||
+            (customer.identifiers.email && booking.customerEmail === customer.identifiers.email) ||
+            (customer.identifiers.phone && booking.customerPhone === customer.identifiers.phone)
+        );
+
+        if (customerBookings.length > 0) {
+            // Sort bookings by date to get the latest one
+            const latestBooking = customerBookings.reduce((latest, current) => {
+                return new Date(current.createdAt) > new Date(latest.createdAt) ? current : latest;
+            }, customerBookings[0]);
+
+            // Set the complete booking data for editing
+            setEditingCustomer(latestBooking);
+            setMessage('');
+            setError('');
+        } else {
+            setError('No booking found for this customer.');
+        }
+    };
+
+    const handleDelete = async (customer) => {
+        if (window.confirm('Are you sure you want to delete this customer\'s booking?')) {
+            try {
+                // Find all bookings for this customer
+                const customerBookings = bookingsData.filter(booking =>
+                    (customer.identifiers.cnic && booking.cnic === customer.identifiers.cnic) ||
+                    (customer.identifiers.email && booking.customerEmail === customer.identifiers.email) ||
+                    (customer.identifiers.phone && booking.customerPhone === customer.identifiers.phone)
+                );
+
+                if (customerBookings.length > 0) {
+                    // Delete the latest booking
+                    const latestBooking = customerBookings.reduce((latest, current) => {
+                        return new Date(current.createdAt) > new Date(latest.createdAt) ? current : latest;
+                    }, customerBookings[0]);
+
+                    await axios.delete(`https://car-backend-production.up.railway.app/api/bookings/${latestBooking._id}`);
+                    setMessage('Customer booking deleted successfully!');
+                    fetchCustomers();
+                } else {
+                    setError('No booking found for this customer.');
+                }
+            } catch (err) {
+                console.error(err);
+                setError('Failed to delete customer booking.');
+            }
         }
     };
 
     const handleEditSubmit = async (e) => {
         e.preventDefault();
+
+        // Validation for required fields and formats
+        const phoneRegex = /^[0-9]{4}-[0-9]{7}$/;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const cnicRegex = /^[0-9]{5}-[0-9]{7}-[0-9]$/;
+
+        if (!editingCustomer.customerPhone || !phoneRegex.test(editingCustomer.customerPhone)) {
+            setError('Please enter a valid phone number (format: 0300-1234567)');
+            return;
+        }
+
+        if (!editingCustomer.customerEmail || !emailRegex.test(editingCustomer.customerEmail)) {
+            setError('Please enter a valid email address');
+            return;
+        }
+
+        if (!editingCustomer.cnic || !cnicRegex.test(editingCustomer.cnic)) {
+            setError('Please enter a valid CNIC number (format: 12345-1234567-1)');
+            return;
+        }
+
         try {
             await axios.put(`https://car-backend-production.up.railway.app/api/bookings/${editingCustomer._id}`, editingCustomer);
-            setMessage('Customer updated successfully!');
+            setMessage('Customer booking updated successfully!');
             setError('');
             setEditingCustomer(null);
             fetchCustomers();
         } catch (err) {
             console.error(err);
-            setError('Failed to update customer.');
+            setError('Failed to update customer booking.');
             setMessage('');
-        }
-    };
-
-    const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this customer booking?')) {
-            try {
-                await axios.delete(`https://car-backend-production.up.railway.app/api/bookings/${id}`);
-                setMessage('Customer deleted successfully!');
-                fetchCustomers();
-            } catch (err) {
-                console.error(err);
-                setError('Failed to delete customer.');
-            }
         }
     };
 
@@ -180,18 +283,23 @@ function Customers() {
     const filteredCustomers = customers.filter(customer => {
         const searchLower = searchTerm.toLowerCase();
         return (
-            customer.name?.toLowerCase().includes(searchLower) ||
-            customer.email?.toLowerCase().includes(searchLower) ||
-            customer.phone?.toLowerCase().includes(searchLower) ||
+            customer.customerName?.toLowerCase().includes(searchLower) ||
+            customer.customerEmail?.toLowerCase().includes(searchLower) ||
+            customer.customerPhone?.toLowerCase().includes(searchLower) ||
             customer.cnic?.toLowerCase().includes(searchLower)
         );
     });
 
-    const handleModalClick = (e) => {
-        // Close modal if clicking outside the modal content
-        if (e.target.classList.contains('modal-backdrop')) {
-            setShowAddModal(false);
-            setEditingCustomer(null);
+    const getStatusBadgeClass = (status) => {
+        switch (status) {
+            case 'Pending':
+                return 'bg-warning';
+            case 'Confirmed':
+                return 'bg-success';
+            case 'Cancelled':
+                return 'bg-danger';
+            default:
+                return 'bg-secondary';
         }
     };
 
@@ -240,13 +348,14 @@ function Customers() {
                                     <th>Email</th>
                                     <th>Phone</th>
                                     <th>CNIC</th>
+                                    <th>Total Bookings</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {isLoading ? (
                                     <tr>
-                                        <td colSpan="5" className="text-center py-4">
+                                        <td colSpan="6" className="text-center py-4">
                                             <div className="spinner-border text-primary me-2" role="status">
                                                 <span className="visually-hidden">Loading...</span>
                                             </div>
@@ -255,22 +364,45 @@ function Customers() {
                                     </tr>
                                 ) : filteredCustomers.length === 0 ? (
                                     <tr>
-                                        <td colSpan="5" className="text-center">
+                                        <td colSpan="6" className="text-center">
                                             {searchTerm ? 'No matching customers found' : 'No customers found'}
                                         </td>
                                     </tr>
                                 ) : (
                                     filteredCustomers.map(customer => (
-                                        <tr key={customer.id}>
-                                            <td>{customer.name}</td>
-                                            <td>{customer.email}</td>
-                                            <td>{customer.phone}</td>
-                                            <td>{customer.cnic}</td>
+                                        <tr key={`${customer.identifiers.cnic || customer.identifiers.email || customer.identifiers.phone}`}>
+                                            <td>{customer.customerName}</td>
                                             <td>
-                                                <button className='btn btn-link text-primary p-0 me-2' onClick={() => setEditingCustomer(customer)}>
+                                                {customer.customerEmail === 'N/A' ? (
+                                                    <span className="text-danger">Missing</span>
+                                                ) : (
+                                                    customer.customerEmail
+                                                )}
+                                            </td>
+                                            <td>
+                                                {customer.customerPhone === 'N/A' ? (
+                                                    <span className="text-danger">Missing</span>
+                                                ) : (
+                                                    customer.customerPhone
+                                                )}
+                                            </td>
+                                            <td>
+                                                {customer.cnic === 'N/A' ? (
+                                                    <span className="text-danger">Missing</span>
+                                                ) : (
+                                                    customer.cnic
+                                                )}
+                                            </td>
+                                            <td>
+                                                <span className="badge bg-info">
+                                                    {customer.bookingCount} bookings
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <button className='btn btn-link text-primary p-0 me-2' onClick={() => handleEditClick(customer)}>
                                                     <i className="fas fa-pencil-alt"></i>
                                                 </button>
-                                                <button className='btn btn-link text-danger p-0' onClick={() => handleDelete(customer.id)}>
+                                                <button className='btn btn-link text-danger p-0' onClick={() => handleDelete(customer)}>
                                                     <i className="fas fa-trash"></i>
                                                 </button>
                                             </td>
@@ -286,10 +418,12 @@ function Customers() {
                                 <div className="modal-dialog">
                                     <div className="modal-content">
                                         <div className="modal-header">
-                                            <h5 className="modal-title">Add New Customer</h5>
+                                            <h5 className="modal-title">Add New Customer Booking</h5>
                                             <button type="button" className="btn-close" onClick={() => setShowAddModal(false)}></button>
                                         </div>
                                         <div className="modal-body">
+                                            {message && <div className="alert alert-success">{message}</div>}
+                                            {error && <div className="alert alert-danger">{error}</div>}
                                             <form onSubmit={handleAddSubmit}>
                                                 <div className="mb-3">
                                                     <select name="carId" className="form-control" onChange={handleAddChange} required>
@@ -300,16 +434,44 @@ function Customers() {
                                                     </select>
                                                 </div>
                                                 <div className="mb-3">
-                                                    <input type="text" name="customerName" className="form-control" placeholder="Customer Name" onChange={handleAddChange} required />
+                                                    <input
+                                                        type="text"
+                                                        name="customerName"
+                                                        className="form-control"
+                                                        placeholder="Customer Name"
+                                                        onChange={handleAddChange}
+                                                        required
+                                                    />
                                                 </div>
                                                 <div className="mb-3">
-                                                    <input type="email" name="customerEmail" className="form-control" placeholder="Customer Email" onChange={handleAddChange} required />
+                                                    <input
+                                                        type="email"
+                                                        name="customerEmail"
+                                                        className="form-control"
+                                                        placeholder="Email (example@email.com)"
+                                                        onChange={handleAddChange}
+                                                        required
+                                                    />
                                                 </div>
                                                 <div className="mb-3">
-                                                    <input type="text" name="customerPhone" className="form-control" placeholder="Phone Number" onChange={handleAddChange} required />
+                                                    <input
+                                                        type="text"
+                                                        name="customerPhone"
+                                                        className="form-control"
+                                                        placeholder="Phone Number (0300-1234567)"
+                                                        onChange={handleAddChange}
+                                                        required
+                                                    />
                                                 </div>
                                                 <div className="mb-3">
-                                                    <input type="text" name="cnic" className="form-control" placeholder="CNIC" onChange={handleAddChange} required />
+                                                    <input
+                                                        type="text"
+                                                        name="cnic"
+                                                        className="form-control"
+                                                        placeholder="CNIC (12345-1234567-1)"
+                                                        onChange={handleAddChange}
+                                                        required
+                                                    />
                                                 </div>
                                                 <div className="mb-3">
                                                     <input type="date" name="startDate" className="form-control" onChange={handleAddChange} required />
@@ -321,7 +483,7 @@ function Customers() {
                                                     <label className="form-label">Total Price</label>
                                                     <input type="text" className="form-control" value={`${addFormData.totalPrice || 0} PKR`} disabled />
                                                 </div>
-                                                <button type="submit" className="btn btn-primary">Add Customer</button>
+                                                <button type="submit" className="btn btn-primary">Add Customer Booking</button>
                                             </form>
                                         </div>
                                     </div>
@@ -335,10 +497,12 @@ function Customers() {
                                 <div className="modal-dialog">
                                     <div className="modal-content">
                                         <div className="modal-header">
-                                            <h5 className="modal-title">Edit Customer</h5>
+                                            <h5 className="modal-title">Edit Customer Booking</h5>
                                             <button type="button" className="btn-close" onClick={() => setEditingCustomer(null)}></button>
                                         </div>
                                         <div className="modal-body">
+                                            {message && <div className="alert alert-success">{message}</div>}
+                                            {error && <div className="alert alert-danger">{error}</div>}
                                             <form onSubmit={handleEditSubmit}>
                                                 <div className="mb-3">
                                                     <select name="carId" className="form-control" value={editingCustomer.carId} onChange={handleEditChange} required>
@@ -349,16 +513,48 @@ function Customers() {
                                                     </select>
                                                 </div>
                                                 <div className="mb-3">
-                                                    <input type="text" name="customerName" className="form-control" placeholder="Customer Name" value={editingCustomer.name} onChange={handleEditChange} required />
+                                                    <input
+                                                        type="text"
+                                                        name="customerName"
+                                                        className="form-control"
+                                                        placeholder="Customer Name"
+                                                        value={editingCustomer.customerName}
+                                                        onChange={handleEditChange}
+                                                        required
+                                                    />
                                                 </div>
                                                 <div className="mb-3">
-                                                    <input type="email" name="customerEmail" className="form-control" placeholder="Customer Email" value={editingCustomer.email} onChange={handleEditChange} required />
+                                                    <input
+                                                        type="email"
+                                                        name="customerEmail"
+                                                        className="form-control"
+                                                        placeholder="Email (example@email.com)"
+                                                        value={editingCustomer.customerEmail}
+                                                        onChange={handleEditChange}
+                                                        required
+                                                    />
                                                 </div>
                                                 <div className="mb-3">
-                                                    <input type="text" name="customerPhone" className="form-control" placeholder="Phone Number" value={editingCustomer.phone} onChange={handleEditChange} required />
+                                                    <input
+                                                        type="text"
+                                                        name="customerPhone"
+                                                        className="form-control"
+                                                        placeholder="Phone Number (0300-1234567)"
+                                                        value={editingCustomer.customerPhone}
+                                                        onChange={handleEditChange}
+                                                        required
+                                                    />
                                                 </div>
                                                 <div className="mb-3">
-                                                    <input type="text" name="cnic" className="form-control" placeholder="CNIC" value={editingCustomer.cnic} onChange={handleEditChange} required />
+                                                    <input
+                                                        type="text"
+                                                        name="cnic"
+                                                        className="form-control"
+                                                        placeholder="CNIC (12345-1234567-1)"
+                                                        value={editingCustomer.cnic}
+                                                        onChange={handleEditChange}
+                                                        required
+                                                    />
                                                 </div>
                                                 <div className="mb-3">
                                                     <input type="date" name="startDate" className="form-control" value={editingCustomer.startDate?.split('T')[0]} onChange={handleEditChange} required />
@@ -377,7 +573,7 @@ function Customers() {
                                                         <option value="Cancelled">Cancelled</option>
                                                     </select>
                                                 </div>
-                                                <button type="submit" className="btn btn-primary">Update Customer</button>
+                                                <button type="submit" className="btn btn-primary">Update Customer Booking</button>
                                             </form>
                                         </div>
                                     </div>

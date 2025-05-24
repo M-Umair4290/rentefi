@@ -113,13 +113,33 @@ function Bookings() {
 
     const handleAddSubmit = async (e) => {
         e.preventDefault();
+
+        // Validation for required fields and formats
+        const phoneRegex = /^[0-9]{4}-[0-9]{7}$/;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const cnicRegex = /^[0-9]{5}-[0-9]{7}-[0-9]$/;
+
+        if (!addFormData.customerPhone || !phoneRegex.test(addFormData.customerPhone)) {
+            setError('Please enter a valid phone number (format: 0300-1234567)');
+            return;
+        }
+
+        if (!addFormData.customerEmail || !emailRegex.test(addFormData.customerEmail)) {
+            setError('Please enter a valid email address');
+            return;
+        }
+
+        if (!addFormData.cnic || !cnicRegex.test(addFormData.cnic)) {
+            setError('Please enter a valid CNIC number (format: 12345-1234567-1)');
+            return;
+        }
+
         try {
             await axios.post('https://car-backend-production.up.railway.app/api/bookings', addFormData);
             setMessage('Booking added successfully!');
             setError('');
             setShowAddModal(false);
             fetchBookings();
-            // Reset form
             setAddFormData({
                 carId: '',
                 customerName: '',
@@ -142,6 +162,27 @@ function Bookings() {
 
     const handleEditSubmit = async (e) => {
         e.preventDefault();
+
+        // Validation for required fields and formats
+        const phoneRegex = /^[0-9]{4}-[0-9]{7}$/;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const cnicRegex = /^[0-9]{5}-[0-9]{7}-[0-9]$/;
+
+        if (!editingBooking.customerPhone || !phoneRegex.test(editingBooking.customerPhone)) {
+            setError('Please enter a valid phone number (format: 0300-1234567)');
+            return;
+        }
+
+        if (!editingBooking.customerEmail || !emailRegex.test(editingBooking.customerEmail)) {
+            setError('Please enter a valid email address');
+            return;
+        }
+
+        if (!editingBooking.cnic || !cnicRegex.test(editingBooking.cnic)) {
+            setError('Please enter a valid CNIC number (format: 12345-1234567-1)');
+            return;
+        }
+
         try {
             await axios.put(`https://car-backend-production.up.railway.app/api/bookings/${editingBooking._id}`, editingBooking);
             setMessage('Booking updated successfully!');
@@ -338,6 +379,8 @@ function Bookings() {
                                             <button type="button" className="btn-close" onClick={() => setShowAddModal(false)}></button>
                                         </div>
                                         <div className="modal-body">
+                                            {message && <div className="alert alert-success">{message}</div>}
+                                            {error && <div className="alert alert-danger">{error}</div>}
                                             <form onSubmit={handleAddSubmit}>
                                                 <div className="mb-3">
                                                     <select name="carId" className="form-control" onChange={handleAddChange} required>
@@ -348,16 +391,44 @@ function Bookings() {
                                                     </select>
                                                 </div>
                                                 <div className="mb-3">
-                                                    <input type="text" name="customerName" className="form-control" placeholder="Customer Name" onChange={handleAddChange} required />
+                                                    <input
+                                                        type="text"
+                                                        name="customerName"
+                                                        className="form-control"
+                                                        placeholder="Customer Name"
+                                                        onChange={handleAddChange}
+                                                        required
+                                                    />
                                                 </div>
                                                 <div className="mb-3">
-                                                    <input type="email" name="customerEmail" className="form-control" placeholder="Customer Email" onChange={handleAddChange} required />
+                                                    <input
+                                                        type="email"
+                                                        name="customerEmail"
+                                                        className="form-control"
+                                                        placeholder="Email (example@email.com)"
+                                                        onChange={handleAddChange}
+                                                        required
+                                                    />
                                                 </div>
                                                 <div className="mb-3">
-                                                    <input type="text" name="customerPhone" className="form-control" placeholder="Phone Number" onChange={handleAddChange} required />
+                                                    <input
+                                                        type="text"
+                                                        name="customerPhone"
+                                                        className="form-control"
+                                                        placeholder="Phone Number (0300-1234567)"
+                                                        onChange={handleAddChange}
+                                                        required
+                                                    />
                                                 </div>
                                                 <div className="mb-3">
-                                                    <input type="text" name="cnic" className="form-control" placeholder="CNIC" onChange={handleAddChange} required />
+                                                    <input
+                                                        type="text"
+                                                        name="cnic"
+                                                        className="form-control"
+                                                        placeholder="CNIC (12345-1234567-1)"
+                                                        onChange={handleAddChange}
+                                                        required
+                                                    />
                                                 </div>
                                                 <div className="mb-3">
                                                     <input type="date" name="startDate" className="form-control" onChange={handleAddChange} required />
@@ -387,6 +458,8 @@ function Bookings() {
                                             <button type="button" className="btn-close" onClick={() => setEditingBooking(null)}></button>
                                         </div>
                                         <div className="modal-body">
+                                            {message && <div className="alert alert-success">{message}</div>}
+                                            {error && <div className="alert alert-danger">{error}</div>}
                                             <form onSubmit={handleEditSubmit}>
                                                 <div className="mb-3">
                                                     <select name="carId" className="form-control" value={editingBooking.carId} onChange={handleEditChange} required>
@@ -397,22 +470,54 @@ function Bookings() {
                                                     </select>
                                                 </div>
                                                 <div className="mb-3">
-                                                    <input type="text" name="customerName" className="form-control" placeholder="Customer Name" value={editingBooking.customerName} onChange={handleEditChange} required />
+                                                    <input
+                                                        type="text"
+                                                        name="customerName"
+                                                        className="form-control"
+                                                        placeholder="Customer Name"
+                                                        value={editingBooking.customerName}
+                                                        onChange={handleEditChange}
+                                                        required
+                                                    />
                                                 </div>
                                                 <div className="mb-3">
-                                                    <input type="email" name="customerEmail" className="form-control" placeholder="Customer Email" value={editingBooking.customerEmail} onChange={handleEditChange} required />
+                                                    <input
+                                                        type="email"
+                                                        name="customerEmail"
+                                                        className="form-control"
+                                                        placeholder="Email (example@email.com)"
+                                                        value={editingBooking.customerEmail}
+                                                        onChange={handleEditChange}
+                                                        required
+                                                    />
                                                 </div>
                                                 <div className="mb-3">
-                                                    <input type="text" name="customerPhone" className="form-control" placeholder="Phone Number" value={editingBooking.customerPhone} onChange={handleEditChange} required />
+                                                    <input
+                                                        type="text"
+                                                        name="customerPhone"
+                                                        className="form-control"
+                                                        placeholder="Phone Number (0300-1234567)"
+                                                        value={editingBooking.customerPhone}
+                                                        onChange={handleEditChange}
+                                                        required
+                                                    />
                                                 </div>
                                                 <div className="mb-3">
-                                                    <input type="text" name="cnic" className="form-control" placeholder="CNIC" value={editingBooking.cnic} onChange={handleEditChange} required />
+                                                    <input
+                                                        type="text"
+                                                        name="cnic"
+                                                        className="form-control"
+                                                        placeholder="CNIC (12345-1234567-1)"
+                                                        value={editingBooking.cnic}
+                                                        onChange={handleEditChange}
+                                                        required
+                                                    />
                                                 </div>
                                                 <div className="mb-3">
-                                                    <input type="date" name="startDate" className="form-control" value={editingBooking.startDate.split('T')[0]} onChange={handleEditChange} required />
+                                                    <input type="date" name="startDate" className="form-control" value={editingBooking.startDate?.split('T')[0]} onChange={handleEditChange} required />
                                                 </div>
                                                 <div className="mb-3">
-                                                    <input type="date" name="endDate" className="form-control" value={editingBooking.endDate.split('T')[0]} onChange={handleEditChange} required />
+                                                    <input type="date" name="endDate" className="form-control" value={editingBooking.endDate?.split('T')[0]} onChange={handleEditChange} required />
                                                 </div>
                                                 <div className="mb-3">
                                                     <label className="form-label">Total Price</label>
