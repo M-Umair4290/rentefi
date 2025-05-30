@@ -21,21 +21,24 @@ function Navigation() {
     return (
         <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
             <div className="container-fluid">
-                <Link className="navbar-brand mx-5" to="/">RENTEFI</Link>
-                <button
-                    className="navbar-toggler"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#navbarNav"
-                    aria-controls="navbarNav"
-                    aria-expanded="false"
-                    aria-label="Toggle navigation"
-                >
-                    <span className="navbar-toggler-icon"></span>
-                </button>
+                <Link className="navbar-brand" to="/">RENTEFI</Link>
+
+                <div className="d-flex align-items-center">
+                    <button
+                        className="navbar-toggler d-flex align-items-center justify-content-center border rounded d-lg-none"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#navbarNav"
+                        aria-controls="navbarNav"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation"
+                    >
+                        <span className="navbar-toggler-icon fs-1"></span>
+                    </button>
+                </div>
 
                 <div className="collapse navbar-collapse" id="navbarNav">
-                    <ul className="navbar-nav mx-auto mb-2 mb-lg-0">
+                    <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
                         <li className="nav-item">
                             <NavLink className="nav-link" to="/">Home</NavLink>
                         </li>
@@ -50,7 +53,7 @@ function Navigation() {
                         </li>
                     </ul>
 
-                    <ul className="navbar-nav mx-5">
+                    <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
                         {user ? (
                             <li className="nav-item dropdown">
                                 <button

@@ -57,7 +57,7 @@ function CarDetails() {
         <>
             <Navigation />
 
-            <div className="container py-5 vh-100">
+            <div className="container py-5 min-vh-100">
                 <div className="row">
                     <div className="col-md-6">
                         <img
