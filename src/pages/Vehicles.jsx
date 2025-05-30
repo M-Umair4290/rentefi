@@ -218,11 +218,11 @@ function Vehicles() {
             <Navbar />
             <div className='container-fluid px-0 overflow-hidden text-center'>
                 <div className="row">
-                    <div className="col-3">
+                    <div className="col-lg-3 col-md-4 col-sm-12">
                         <Sidebar />
                     </div>
 
-                    <div className='col-9 p-3 overflow-scroll'>
+                    <div className='col-lg-9 col-md-8 col-sm-12 p-3 overflow-scroll'>
                         {error && <div className="alert alert-danger">{error}</div>}
 
                         <div className="d-flex justify-content-between align-items-center mb-4">

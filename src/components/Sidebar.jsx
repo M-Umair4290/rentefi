@@ -6,12 +6,12 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 function Sidebar() {
     return (
         <>
-            <div className='d-flex' style={{ height: '100%', minHeight: '100vh' }}>
+            <div className='d-flex' style={{ height: '100%' }}>
 
-                <div className='bg-dark text-light' style={{ width: '100%', minHeight: '100vh' }}>
+                <div className='bg-dark text-light' style={{ width: '100%' }}>
 
                     <nav className=''>
-                        <ul className='list-unstyled d-flex flex-column justify-content-end align-items-center'>
+                        <ul className='list-unstyled d-flex flex-md-column flex-row justify-content-around align-items-center'>
                             <li className='list-unstyled my-2 py-2'>
                                 <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'nav-link active text-primary' : 'nav-link'}>Dashboard</NavLink>
                             </li>

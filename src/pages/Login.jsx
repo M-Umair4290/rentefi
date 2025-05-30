@@ -74,7 +74,7 @@ function Login() {
                     <div className={`col-12 col-md-6  ${styles.logincover}`}>
                     </div>
 
-                    <div className='col-12 col-md-6 d-flex align-items-center justify-content-evenly'>
+                    <div className='col-12 col-md-6 d-flex align-items-center justify-content-evenly py-5'>
                         <form className='w-100 px-4 d-flex flex-column justify-content-center' style={{ maxWidth: '400px' }} onSubmit={handleSubmit}>
                             <h1>Admin Login</h1>
                             <p>Access to the Rentefi admin dashboard</p>

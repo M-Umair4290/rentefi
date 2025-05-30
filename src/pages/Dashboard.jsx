@@ -309,11 +309,11 @@ function Dashboard() {
             <Navbar />
             <div className="container-fluid px-0 overflow-hidden">
                 <div className="row">
-                    <div className="col-3">
+                    <div className="col-lg-3 col-md-4 col-sm-12">
                         <Sidebar />
                     </div>
 
-                    <div className="col-9">
+                    <div className="col-lg-9 col-md-8 col-sm-12 overflow-scroll">
                         <div className="container py-4">
                             <h3 className="mb-4">Admin Dashboard</h3>
                             <div className="row g-4">

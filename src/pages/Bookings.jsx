@@ -269,11 +269,11 @@ function Bookings() {
             <Navbar />
             <div className="container-fluid px-0 overflow-hidden">
                 <div className="row">
-                    <div className="col-3">
+                    <div className="col-lg-3 col-md-4 col-sm-12">
                         <Sidebar />
                     </div>
 
-                    <div className="col-9 p-4">
+                    <div className="col-lg-9 col-md-8 col-sm-12 p-4 overflow-scroll">
                         <div className="d-flex justify-content-between align-items-center mb-4">
                             <h2>Bookings</h2>
                             <div className="d-flex align-items-center gap-3">
