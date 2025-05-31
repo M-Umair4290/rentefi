@@ -71,12 +71,42 @@ function Dashboard() {
                 const bookings = bookingsResponse.data;
                 const cars = carsResponse.data;
 
-                // Calculate total revenue
-                const totalRevenue = bookings.reduce((sum, booking) =>
-                    sum + (booking.totalPrice || 0), 0);
+                // Get unique customers using phone and name combination
+                const uniqueCustomers = new Set(
+                    bookings.map(booking => `${booking.customerPhone}_${booking.customerName.toLowerCase()}`)
+                ).size;
 
-                // Get unique customers
-                const uniqueCustomers = new Set(bookings.map(booking => booking.customerPhone)).size;
+                // Debug log for all bookings
+                console.log('All bookings:', bookings.map(b => ({
+                    id: b._id,
+                    status: b.status,
+                    price: b.totalPrice,
+                    customer: b.customerName,
+                    phone: b.customerPhone
+                })));
+
+                // Calculate total revenue from confirmed bookings only
+                const confirmedBookings = bookings.filter(booking =>
+                    booking.status && booking.status.toLowerCase() === 'confirmed'
+                );
+
+                console.log('Confirmed bookings:', confirmedBookings.map(b => ({
+                    id: b._id,
+                    price: b.totalPrice,
+                    customer: b.customerName
+                })));
+
+                const totalRevenue = confirmedBookings.reduce((sum, booking) => {
+                    // Convert price to number, handling string values
+                    const price = typeof booking.totalPrice === 'string'
+                        ? parseFloat(booking.totalPrice.replace(/[^0-9.-]+/g, ''))
+                        : Number(booking.totalPrice) || 0;
+
+                    console.log(`Adding booking price: ${price} (original: ${booking.totalPrice}) for ${booking.customerName}`);
+                    return sum + price;
+                }, 0);
+
+                console.log('Final calculated revenue:', totalRevenue);
 
                 // Get last 4 weeks
                 const last4Weeks = getLast4Weeks();
@@ -99,7 +129,10 @@ function Dashboard() {
 
                     if (matchingWeek) {
                         weeklyBookings[matchingWeek.label]++;
-                        weeklyRevenue[matchingWeek.label] += (booking.totalPrice || 0);
+                        // Only add to revenue if booking is confirmed
+                        if (booking.status === 'Confirmed') {
+                            weeklyRevenue[matchingWeek.label] += (booking.totalPrice || 0);
+                        }
                     }
                 });
 

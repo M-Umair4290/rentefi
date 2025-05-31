@@ -45,6 +45,62 @@ function Vehicles() {
         fetchVehicles();
     }, []);
 
+    const checkExpiredBookings = async () => {
+        try {
+            // Get all bookings
+            const bookingsResponse = await axios.get('https://car-backend-production.up.railway.app/api/bookings');
+            const bookings = bookingsResponse.data;
+            const currentDate = new Date();
+
+            // Filter confirmed bookings that have expired
+            const expiredBookings = bookings.filter(booking =>
+                booking.status === 'Confirmed' &&
+                new Date(booking.endDate) < currentDate
+            );
+
+            // Update each expired booking and its associated car
+            for (const booking of expiredBookings) {
+                console.log(`Processing expired booking for car ${booking.carId}`);
+
+                try {
+                    // Update car to available
+                    await axios.put(`https://car-backend-production.up.railway.app/api/cars/${booking.carId}`, {
+                        available: true
+                    });
+
+                    // Update booking status to completed
+                    await axios.put(`https://car-backend-production.up.railway.app/api/bookings/${booking._id}`, {
+                        status: 'Completed'
+                    });
+
+                    console.log(`Updated car ${booking.carId} to available and booking ${booking._id} to completed`);
+                } catch (error) {
+                    console.error(`Error updating expired booking ${booking._id}:`, error);
+                }
+            }
+
+            // Refresh vehicles list if any updates were made
+            if (expiredBookings.length > 0) {
+                console.log(`Updated ${expiredBookings.length} expired bookings`);
+                fetchVehicles();
+            }
+        } catch (error) {
+            console.error('Error checking expired bookings:', error);
+        }
+    };
+
+    // Check for expired bookings on component mount and every minute
+    useEffect(() => {
+        // Initial check
+        checkExpiredBookings();
+
+        // Set up interval for periodic checks
+        const interval = setInterval(checkExpiredBookings, 60000); // Check every minute
+
+        // Cleanup interval on component unmount
+        return () => clearInterval(interval);
+    }, []);
+
     const fetchVehicles = () => {
         setIsLoading(true);
         axios.get(`https://car-backend-production.up.railway.app/api/cars`)

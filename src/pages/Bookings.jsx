@@ -36,6 +36,69 @@ function Bookings() {
         fetchCars();
     }, []);
 
+    const checkExpiredBookings = async () => {
+        try {
+            const currentDate = new Date();
+
+            // Filter confirmed bookings that have expired
+            const expiredBookings = bookings.filter(booking =>
+                booking.status === 'Confirmed' &&
+                new Date(booking.endDate) < currentDate
+            );
+
+            // Update each expired booking and its associated car
+            for (const booking of expiredBookings) {
+                console.log(`Processing expired booking for car ${booking.carId}`);
+
+                try {
+                    // Extract the car ID properly whether it's an object or string
+                    const carId = typeof booking.carId === 'object' ? booking.carId._id : booking.carId;
+
+                    // Update car to available
+                    await axios.put(`https://car-backend-production.up.railway.app/api/cars/${carId}`, {
+                        available: true
+                    });
+
+                    // Update booking status to completed
+                    await axios.put(`https://car-backend-production.up.railway.app/api/bookings/${booking._id}`, {
+                        status: 'Completed'
+                    });
+
+                    console.log(`Updated car ${carId} to available and booking ${booking._id} to completed`);
+                } catch (error) {
+                    console.error(`Error updating expired booking ${booking._id}:`, error);
+                }
+            }
+
+            // Refresh data if any updates were made
+            if (expiredBookings.length > 0) {
+                console.log(`Updated ${expiredBookings.length} expired bookings`);
+                await fetchBookings();
+                await fetchCars();
+            }
+        } catch (error) {
+            console.error('Error checking expired bookings:', error);
+        }
+    };
+
+    // Initial fetch of bookings and cars
+    useEffect(() => {
+        fetchBookings();
+        fetchCars();
+    }, []);
+
+    // Separate useEffect for expired bookings check
+    useEffect(() => {
+        // Initial check
+        checkExpiredBookings();
+
+        // Set up interval for periodic checks
+        const interval = setInterval(checkExpiredBookings, 60000); // Check every minute
+
+        // Cleanup interval on component unmount
+        return () => clearInterval(interval);
+    }, [bookings]); // Add bookings as dependency to ensure we're working with latest data
+
     const fetchBookings = async () => {
         setIsLoading(true);
         try {
@@ -184,11 +247,21 @@ function Bookings() {
         }
 
         try {
+            // Update the booking
             await axios.put(`https://car-backend-production.up.railway.app/api/bookings/${editingBooking._id}`, editingBooking);
+
+            // If the booking status is changed to Cancelled, update car availability
+            if (editingBooking.status === 'Cancelled') {
+                await axios.put(`https://car-backend-production.up.railway.app/api/cars/${editingBooking.carId}`, {
+                    available: true
+                });
+            }
+
             setMessage('Booking updated successfully!');
             setError('');
             setEditingBooking(null);
             fetchBookings();
+            fetchCars(); // Refresh cars list to show updated availability
         } catch (err) {
             console.error(err);
             setError('Failed to update booking.');
@@ -211,14 +284,62 @@ function Bookings() {
 
     const handleApprove = async (id) => {
         try {
-            await axios.put(`https://car-backend-production.up.railway.app/api/bookings/${id}`, {
-                status: 'Confirmed'
-            });
+            const token = localStorage.getItem('token');
+            const config = {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            };
+
+            // Get the booking details first
+            const bookingResponse = await axios.get(`https://car-backend-production.up.railway.app/api/bookings/${id}`, config);
+            const booking = bookingResponse.data;
+
+            // Extract the car ID properly whether it's an object or string
+            const carId = typeof booking.carId === 'object' ? booking.carId._id : booking.carId;
+            console.log('Extracted Car ID:', carId);
+
+            // Get the car details using the extracted ID
+            const carResponse = await axios.get(`https://car-backend-production.up.railway.app/api/cars/${carId}`, config);
+            const car = carResponse.data;
+
+            // Update booking status
+            await axios.put(
+                `https://car-backend-production.up.railway.app/api/bookings/${id}`,
+                { status: 'Confirmed' },
+                config
+            );
+
+            // Update car using the extracted ID
+            await axios.put(
+                `https://car-backend-production.up.railway.app/api/cars/${carId}`,
+                {
+                    name: car.name,
+                    brand: car.brand,
+                    category: car.category || '',
+                    modelYear: car.modelYear,
+                    numPlate: car.numPlate,
+                    pricePerDay: car.pricePerDay,
+                    seats: car.seats,
+                    fuelType: car.fuelType,
+                    transmission: car.transmission,
+                    carImage: car.carImage,
+                    available: false
+                },
+                config
+            );
+
             setMessage('Booking approved successfully!');
-            fetchBookings();
+            await fetchBookings();
+            await fetchCars();
         } catch (error) {
-            console.error('Approval failed:', error);
-            setError('Failed to approve booking.');
+            console.error('Error details:', {
+                message: error.message,
+                response: error.response?.data,
+                carId: error.config?.url
+            });
+            setError(`Failed to approve booking: ${error.response?.data?.error || error.message}`);
         }
     };
 
@@ -273,8 +394,8 @@ function Bookings() {
                         <Sidebar />
                     </div>
 
-                    <div className="col-lg-9 col-md-8 col-sm-12 p-4 overflow-scroll">
-                        <div className="d-flex justify-content-between align-items-center mb-4">
+                    <div className="col-lg-9 col-md-8 col-sm-12 p-5 overflow-scroll">
+                        <div className="d-flex justify-content-between align-items-center mb-4 pb-5">
                             <h2>Bookings</h2>
                             <div className="d-flex align-items-center gap-3">
                                 <div className="search-box position-relative">
@@ -385,7 +506,7 @@ function Bookings() {
                                                 <div className="mb-3">
                                                     <select name="carId" className="form-control" onChange={handleAddChange} required>
                                                         <option value="">Select Car</option>
-                                                        {cars.map(car => (
+                                                        {cars.filter(car => car.available).map(car => (
                                                             <option key={car._id} value={car._id}>{car.name}</option>
                                                         ))}
                                                     </select>
@@ -528,6 +649,7 @@ function Bookings() {
                                                         <option value="Pending">Pending</option>
                                                         <option value="Confirmed">Confirmed</option>
                                                         <option value="Cancelled">Cancelled</option>
+                                                        <option value="Completed">Completed</option>
                                                     </select>
                                                 </div>
                                                 <button type="submit" className="btn btn-primary">Update Booking</button>

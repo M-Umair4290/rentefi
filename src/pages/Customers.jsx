@@ -43,41 +43,44 @@ function Customers() {
             const response = await axios.get('https://car-backend-production.up.railway.app/api/bookings');
             setBookingsData(response.data);
 
-            // Extract unique customers based on any available identifier (CNIC, email, or phone)
-            const uniqueCustomers = response.data.reduce((acc, booking) => {
-                // Try to find existing customer by CNIC first, then email, then phone
-                const existingCustomerIndex = acc.findIndex(c =>
-                    (booking.cnic && c.cnic === booking.cnic) ||
-                    (booking.customerEmail && c.customerEmail === booking.customerEmail) ||
-                    (booking.customerPhone && c.customerPhone === booking.customerPhone)
-                );
+            // Create a map to store unique customers and their bookings
+            const customerMap = new Map();
 
-                if (existingCustomerIndex === -1) {
-                    // Count all non-cancelled bookings for this customer using all possible identifiers
-                    const bookingCount = response.data.filter(b => {
-                        const isMatch = (booking.cnic && b.cnic === booking.cnic) ||
-                            (booking.customerEmail && b.customerEmail === booking.customerEmail) ||
-                            (booking.customerPhone && b.customerPhone === booking.customerPhone);
-                        return isMatch && b.status.toLowerCase() !== 'cancelled';
-                    }).length;
+            // Process each booking
+            response.data.forEach(booking => {
+                // Create a unique identifier based on name and phone
+                const identifier = `${booking.customerPhone}_${booking.customerName.toLowerCase()}`;
 
-                    acc.push({
-                        customerName: booking.customerName || 'N/A',
-                        customerEmail: booking.customerEmail || 'N/A',
-                        customerPhone: booking.customerPhone || 'N/A',
-                        cnic: booking.cnic || 'N/A',
-                        bookingCount: bookingCount,
-                        // Store all identifiers to help with edit/delete operations
+                if (!customerMap.has(identifier)) {
+                    // Initialize new customer entry
+                    customerMap.set(identifier, {
+                        customerName: booking.customerName,
+                        customerEmail: booking.customerEmail,
+                        customerPhone: booking.customerPhone,
+                        cnic: booking.cnic,
                         identifiers: {
                             cnic: booking.cnic,
-                            email: booking.customerEmail,
-                            phone: booking.customerPhone
-                        }
+                            phone: booking.customerPhone,
+                            email: booking.customerEmail
+                        },
+                        totalBookings: 1,
+                        confirmedBookings: booking.status?.toLowerCase() === 'confirmed' ? 1 : 0
                     });
+                } else {
+                    // Update existing customer data
+                    const customerData = customerMap.get(identifier);
+                    customerData.totalBookings++;
+                    if (booking.status?.toLowerCase() === 'confirmed') {
+                        customerData.confirmedBookings++;
+                    }
                 }
-                return acc;
-            }, []);
+            });
 
+            // Convert map to array and sort by name
+            const uniqueCustomers = Array.from(customerMap.values())
+                .sort((a, b) => a.customerName.localeCompare(b.customerName));
+
+            console.log('Processed unique customers:', uniqueCustomers);
             setCustomers(uniqueCustomers);
             setIsLoading(false);
         } catch (error) {
@@ -349,13 +352,14 @@ function Customers() {
                                     <th>Phone</th>
                                     <th>CNIC</th>
                                     <th>Total Bookings</th>
+                                    <th>Confirmed Bookings</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {isLoading ? (
                                     <tr>
-                                        <td colSpan="6" className="text-center py-4">
+                                        <td colSpan="7" className="text-center py-4">
                                             <div className="spinner-border text-primary me-2" role="status">
                                                 <span className="visually-hidden">Loading...</span>
                                             </div>
@@ -364,40 +368,19 @@ function Customers() {
                                     </tr>
                                 ) : filteredCustomers.length === 0 ? (
                                     <tr>
-                                        <td colSpan="6" className="text-center">
+                                        <td colSpan="7" className="text-center">
                                             {searchTerm ? 'No matching customers found' : 'No customers found'}
                                         </td>
                                     </tr>
                                 ) : (
-                                    filteredCustomers.map(customer => (
-                                        <tr key={`${customer.identifiers.cnic || customer.identifiers.email || customer.identifiers.phone}`}>
+                                    filteredCustomers.map((customer, index) => (
+                                        <tr key={index}>
                                             <td>{customer.customerName}</td>
-                                            <td>
-                                                {customer.customerEmail === 'N/A' ? (
-                                                    <span className="text-danger">Missing</span>
-                                                ) : (
-                                                    customer.customerEmail
-                                                )}
-                                            </td>
-                                            <td>
-                                                {customer.customerPhone === 'N/A' ? (
-                                                    <span className="text-danger">Missing</span>
-                                                ) : (
-                                                    customer.customerPhone
-                                                )}
-                                            </td>
-                                            <td>
-                                                {customer.cnic === 'N/A' ? (
-                                                    <span className="text-danger">Missing</span>
-                                                ) : (
-                                                    customer.cnic
-                                                )}
-                                            </td>
-                                            <td>
-                                                <span className="badge bg-info">
-                                                    {customer.bookingCount} bookings
-                                                </span>
-                                            </td>
+                                            <td>{customer.customerEmail}</td>
+                                            <td>{customer.customerPhone}</td>
+                                            <td>{customer.cnic}</td>
+                                            <td>{customer.totalBookings}</td>
+                                            <td>{customer.confirmedBookings}</td>
                                             <td>
                                                 <button className='btn btn-link text-primary p-0 me-2' onClick={() => handleEditClick(customer)}>
                                                     <i className="fas fa-pencil-alt"></i>
@@ -571,6 +554,7 @@ function Customers() {
                                                         <option value="Pending">Pending</option>
                                                         <option value="Confirmed">Confirmed</option>
                                                         <option value="Cancelled">Cancelled</option>
+                                                        <option value="Completed">Completed</option>
                                                     </select>
                                                 </div>
                                                 <button type="submit" className="btn btn-primary">Update Customer Booking</button>
