@@ -27,6 +27,10 @@ function Sidebar() {
                             <li className='list-unstyled my-2 py-2'>
                                 <NavLink to="/vehicles" className={({ isActive }) => isActive ? 'nav-link active text-primary' : 'nav-link'}>Vehicles</NavLink>
                             </li>
+
+                            <li className='list-unstyled my-2 py-2'>
+                                <NavLink to="/admins" className={({ isActive }) => isActive ? 'nav-link active text-primary' : 'nav-link'}>Admins</NavLink>
+                            </li>
                         </ul>
                     </nav>
                 </div>

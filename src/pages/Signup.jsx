@@ -1,27 +1,32 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import styles from './login.module.css'
+import axios from 'axios';
 // import MyImage from '../assets/loginphoto.jpg'
 
 function Signup() {
     const navigate = useNavigate();
 
     const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setError('');
+        setSuccess('');
 
         // Trim whitespace from inputs
         const trimmedUsername = username.trim();
+        const trimmedEmail = email.trim();
         const trimmedPassword = password.trim();
         const trimmedConfirmPassword = confirmPassword.trim();
 
-        if (!trimmedUsername || !trimmedPassword) {
-            setError('Username and password are required.');
+        if (!trimmedUsername || !trimmedEmail || !trimmedPassword) {
+            setError('Username, email, and password are required.');
             return;
         }
 
@@ -31,25 +36,20 @@ function Signup() {
         }
 
         try {
-            // Save to localStorage (NOT safe for production)
-            const newAdmin = {
+            const response = await axios.post('/api/user/register', {
                 username: trimmedUsername,
+                email: trimmedEmail,
                 password: trimmedPassword,
-                role: 'admin'
-            };
-
-            console.log('Saving admin data:', newAdmin); // Debug log
-            localStorage.setItem('adminUser', JSON.stringify(newAdmin));
-
+                confirmpassword: trimmedConfirmPassword
+            });
+            setSuccess('Signup successful! Please check your email to verify your account.');
             setError('');
-            setSuccess('Admin signup successful! Redirecting to login...');
-
             setTimeout(() => {
                 navigate('/login');
-            }, 2000);
+            }, 3000);
         } catch (err) {
-            console.error('Signup error:', err);
-            setError('An error occurred during signup. Please try again.');
+            setError(err.response?.data?.error || err.response?.data || 'An error occurred during signup.');
+            setSuccess('');
         }
     };
 
@@ -75,6 +75,18 @@ function Signup() {
                                 required
                                 onChange={(event) => setUsername(event.target.value)}
                                 autoComplete="username"
+                            />
+
+                            <input
+                                className='my-2'
+                                type='email'
+                                name='email'
+                                size={40}
+                                placeholder='Email'
+                                value={email}
+                                required
+                                onChange={(event) => setEmail(event.target.value)}
+                                autoComplete="email"
                             />
 
                             <input

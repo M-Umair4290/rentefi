@@ -1,13 +1,14 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import styles from './login.module.css'
+import axios from 'axios';
 // import MyImage from '../assets/loginphoto.jpg'
 
 function Login() {
 
     const navigate = useNavigate();
 
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
@@ -15,55 +16,21 @@ function Login() {
     // const validEmail = 'admin@rentefi.com';
     // const validPassword = '12345';
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
-
+        setError('');
         try {
-            // Get stored admin from localStorage
-            const storedAdmin = localStorage.getItem('adminUser');
-            console.log('Stored admin data:', storedAdmin); // Debug log
-
-            if (!storedAdmin) {
-                setError('No admin account found. Please sign up first.');
-                return;
-            }
-
-            const adminData = JSON.parse(storedAdmin);
-            console.log('Parsed admin data:', adminData); // Debug log
-            console.log('Attempting login with:', { username, password }); // Debug log
-
-            // Trim whitespace and ensure case-sensitive comparison
-            const trimmedUsername = username.trim();
-            const trimmedPassword = password.trim();
-
-            console.log('Comparison:', {
-                storedUsername: adminData.username,
-                inputUsername: trimmedUsername,
-                usernameMatch: adminData.username === trimmedUsername,
-                passwordMatch: adminData.password === trimmedPassword
+            const response = await axios.post('/api/user-login/login', {
+                email: email.trim(),
+                password: password.trim()
             });
-
-            if (adminData.username === trimmedUsername && adminData.password === trimmedPassword) {
-                console.log('Login successful!');
-                setError('');
-
-                // Save current login session with admin role
-                const userData = {
-                    username: trimmedUsername,
-                    role: 'admin'
-                };
-                localStorage.setItem('currentUser', JSON.stringify(userData));
-                console.log('User data saved:', userData);
-
-                // Navigate to dashboard
-                navigate('/dashboard');
-            } else {
-                console.log('Login failed - credentials do not match');
-                setError('Invalid username or password.');
-            }
+            const { Accesstoken, RefreshToken } = response.data;
+            localStorage.setItem('accessToken', Accesstoken);
+            localStorage.setItem('refreshToken', RefreshToken);
+            // Optionally store user info if returned
+            navigate('/dashboard');
         } catch (err) {
-            console.error('Login error:', err);
-            setError('An error occurred during login. Please try again.');
+            setError(err.response?.data?.msg || err.response?.data?.error || 'Invalid email or password.');
         }
     };
 
@@ -81,14 +48,14 @@ function Login() {
 
                             <input
                                 className='mt-4 mb-2'
-                                type='text'
-                                name='username'
+                                type='email'
+                                name='email'
                                 size={40}
-                                placeholder='Username'
-                                value={username}
+                                placeholder='Email'
+                                value={email}
                                 required
-                                onChange={(event) => setUsername(event.target.value)}
-                                autoComplete="username"
+                                onChange={(event) => setEmail(event.target.value)}
+                                autoComplete="email"
                             />
 
                             <input
