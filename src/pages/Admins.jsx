@@ -22,7 +22,7 @@ function Admins() {
         setError('');
         try {
             const token = localStorage.getItem('accessToken');
-            const res = await axios.get('/api/user/all', {
+            const res = await axios.get('https://car-backend-b17f.onrender.com/api/user/all', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setAdmins(res.data);
@@ -56,7 +56,7 @@ function Admins() {
         if (!window.confirm('Are you sure you want to delete this admin?')) return;
         try {
             const token = localStorage.getItem('accessToken');
-            await axios.delete(`/api/user/${id}`, {
+            await axios.delete(`https://car-backend-b17f.onrender.com/api/user/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             fetchAdmins();
@@ -84,7 +84,7 @@ function Admins() {
         try {
             const token = localStorage.getItem('accessToken');
             if (showAddModal) {
-                await axios.post('/api/user/register', {
+                await axios.post('https://car-backend-b17f.onrender.com/api/user/register', {
                     username: form.username,
                     email: form.email,
                     password: form.password,
@@ -94,7 +94,7 @@ function Admins() {
                 });
                 setFormSuccess('Admin created! Please ask the new admin to verify their email.');
             } else if (showEditModal && selectedAdmin) {
-                await axios.put(`/api/user/update/${selectedAdmin._id}`, {
+                await axios.put(`https://car-backend-b17f.onrender.com/api/user/update/${selectedAdmin._id}`, {
                     username: form.username
                 }, {
                     headers: { Authorization: `Bearer ${token}` }
@@ -133,7 +133,7 @@ function Admins() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {admins.map(admin => (
+                                {Array.isArray(admins) && admins.map(admin => (
                                     <tr key={admin._id}>
                                         <td>{admin.username}</td>
                                         <td>{admin.email}</td>
