@@ -36,7 +36,7 @@ function Signup() {
         }
 
         try {
-            const response = await axios.post('/api/user/register', {
+            const response = await axios.post('https://car-backend-b17f.onrender.com/api/user/register', {
                 username: trimmedUsername,
                 email: trimmedEmail,
                 password: trimmedPassword,
