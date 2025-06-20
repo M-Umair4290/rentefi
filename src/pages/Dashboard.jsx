@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Line } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler } from 'chart.js';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Sidebar from '../components/Sidebar';
 
 // Register the necessary components
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
 function Dashboard() {
     const navigate = useNavigate();
@@ -44,8 +44,13 @@ function Dashboard() {
         for (let i = 3; i >= 0; i--) {
             const endDate = new Date(today);
             endDate.setDate(today.getDate() - (i * 7));
+            // Set endDate to the end of the day
+            endDate.setHours(23, 59, 59, 999);
+
             const startDate = new Date(endDate);
             startDate.setDate(endDate.getDate() - 6);
+            // Set startDate to the start of the day
+            startDate.setHours(0, 0, 0, 0);
 
             weeks.push({
                 startDate,
@@ -76,26 +81,10 @@ function Dashboard() {
                     bookings.map(booking => `${booking.customerPhone}_${booking.customerName.toLowerCase()}`)
                 ).size;
 
-                // Debug log for all bookings
-                console.log('All bookings:', bookings.map(b => ({
-                    id: b._id,
-                    status: b.status,
-                    price: b.totalPrice,
-                    customer: b.customerName,
-                    phone: b.customerPhone
-                })));
-
                 // Calculate total revenue from confirmed and completed bookings only
                 const revenueBookings = bookings.filter(booking =>
                     booking.status && (booking.status.toLowerCase() === 'confirmed' || booking.status.toLowerCase() === 'completed')
                 );
-
-                console.log('Revenue bookings:', revenueBookings.map(b => ({
-                    id: b._id,
-                    price: b.totalPrice,
-                    customer: b.customerName,
-                    status: b.status
-                })));
 
                 const totalRevenue = revenueBookings.reduce((sum, booking) => {
                     // Convert price to number, handling string values
@@ -104,8 +93,6 @@ function Dashboard() {
                         : Number(booking.totalPrice) || 0;
                     return sum + price;
                 }, 0);
-
-                console.log('Final calculated revenue:', totalRevenue);
 
                 // Get last 4 weeks
                 const last4Weeks = getLast4Weeks();
@@ -156,6 +143,7 @@ function Dashboard() {
 
                 setBookingTrends(bookingTrendData);
                 setRevenueTrends(revenueTrendData);
+
                 setLoading(false);
             } catch (err) {
                 console.error('Error fetching dashboard data:', err);
