@@ -7,15 +7,12 @@ import { FaUserCircle } from "react-icons/fa";
 function Navbar() {
     const navigate = useNavigate();
 
-    let user = null;
-    try {
-        user = JSON.parse(localStorage.getItem('currentUser'));
-    } catch (e) {
-        console.error('Failed to parse user from localStorage:', e);
-    }
+    // Check for accessToken to determine login state
+    const accessToken = localStorage.getItem('accessToken');
 
     const handleLogout = () => {
-        localStorage.removeItem('currentUser');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
         navigate('/login');
     };
 
@@ -28,14 +25,11 @@ function Navbar() {
                     <div className='dropdown'>
                         <button className='btn text-light dropdown-toggle d-flex align-items-center border-0 bg-dark' type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
                             <span><FaUserCircle size={25} /></span>
-                            {user && <span className="ms-2">{user.username}</span>}
                         </button>
 
                         <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
-                            {user ? (
-                                <>
-                                    <li><button className="dropdown-item text-danger" onClick={handleLogout}>Logout</button></li>
-                                </>
+                            {accessToken ? (
+                                <li><button className="dropdown-item text-danger" onClick={handleLogout}>Logout</button></li>
                             ) : (
                                 <li><Link className="dropdown-item" to="/login">Login</Link></li>
                             )}
