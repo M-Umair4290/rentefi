@@ -13,7 +13,7 @@ function Admins() {
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [selectedAdmin, setSelectedAdmin] = useState(null);
-    const [form, setForm] = useState({ username: '', email: '', password: '', confirmpassword: '' });
+    const [form, setForm] = useState({ username: '', email: '', password: '', confirmpassword: '', isActive: true });
     const [formError, setFormError] = useState('');
     const [formSuccess, setFormSuccess] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
@@ -39,7 +39,7 @@ function Admins() {
     }, []);
 
     const handleAdd = () => {
-        setForm({ username: '', email: '', password: '', confirmpassword: '' });
+        setForm({ username: '', email: '', password: '', confirmpassword: '', isActive: true });
         setFormError('');
         setFormSuccess('');
         setShowAddModal(true);
@@ -47,7 +47,13 @@ function Admins() {
 
     const handleEdit = (admin) => {
         setSelectedAdmin(admin);
-        setForm({ username: admin.username, email: admin.email, password: '', confirmpassword: '' });
+        setForm({
+            username: admin.username,
+            email: admin.email,
+            password: '',
+            confirmpassword: '',
+            isActive: admin.isActive
+        });
         setFormError('');
         setFormSuccess('');
         setShowEditModal(true);
@@ -78,7 +84,7 @@ function Admins() {
             setFormError('All fields are required.');
             return;
         }
-        if (form.password !== form.confirmpassword) {
+        if ((showAddModal || form.password) && form.password !== form.confirmpassword) {
             setFormError('Passwords do not match.');
             return;
         }
@@ -89,15 +95,22 @@ function Admins() {
                     username: form.username,
                     email: form.email,
                     password: form.password,
-                    confirmpassword: form.confirmpassword
+                    confirmpassword: form.confirmpassword,
+                    isActive: form.isActive
                 }, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setFormSuccess('Admin created! Please ask the new admin to verify their email.');
             } else if (showEditModal && selectedAdmin) {
-                await axios.put(`https://car-backend-b17f.onrender.com/api/user/update/${selectedAdmin._id}`, {
-                    username: form.username
-                }, {
+                const updateData = {
+                    username: form.username,
+                    isActive: form.isActive
+                };
+                if (form.password) {
+                    updateData.password = form.password;
+                    updateData.confirmpassword = form.confirmpassword;
+                }
+                await axios.put(`https://car-backend-b17f.onrender.com/api/user/update/${selectedAdmin._id}`, updateData, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setFormSuccess('Admin updated!');
@@ -122,14 +135,14 @@ function Admins() {
     });
 
     return (
-        <>
+        <div className="d-flex flex-column min-vh-100">
             <Navbar />
-            <div className="container-fluid px-0 overflow-hidden">
-                <div className="row">
+            <div className="flex-grow-1 container-fluid px-0 overflow-hidden">
+                <div className="row h-100">
                     <div className="col-lg-3 col-md-4 col-sm-12 p-0 bg-dark">
                         <Sidebar />
                     </div>
-                    <div className="col-lg-9 col-md-8 col-sm-12 p-4">
+                    <div className="col-lg-9 col-md-8 col-sm-12 p-4 d-flex flex-column">
                         <div className="d-flex justify-content-between align-items-center mb-4 pb-3">
                             <h2>Admins</h2>
                             <div className="d-flex align-items-center gap-3">
@@ -155,8 +168,8 @@ function Admins() {
                             </div>
                         </div>
                         {loading ? <p>Loading...</p> : error ? <p style={{ color: 'red' }}>{error}</p> : (
-                            <div className="table-responsive">
-                                <table className="table table-bordered w-100">
+                            <div className="table-responsive flex-grow-1">
+                                <table className="table table-bordered w-100 mb-0">
                                     <thead>
                                         <tr>
                                             <th>Username</th>
@@ -198,27 +211,39 @@ function Admins() {
 
                         {/* Add Modal */}
                         {showAddModal && (
-                            <div className="modal show d-block" tabIndex="-1">
+                            <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
                                 <div className="modal-dialog">
                                     <div className="modal-content">
                                         <div className="modal-header">
                                             <h5 className="modal-title">Add Admin</h5>
                                             <button type="button" className="btn-close" onClick={() => setShowAddModal(false)}></button>
                                         </div>
-                                        <form onSubmit={handleFormSubmit}>
-                                            <div className="modal-body">
-                                                <input className="form-control my-2" name="username" placeholder="Username" value={form.username} onChange={handleFormChange} required />
-                                                <input className="form-control my-2" name="email" type="email" placeholder="Email" value={form.email} onChange={handleFormChange} required />
-                                                <input className="form-control my-2" name="password" type="password" placeholder="Password" value={form.password} onChange={handleFormChange} required />
-                                                <input className="form-control my-2" name="confirmpassword" type="password" placeholder="Confirm Password" value={form.confirmpassword} onChange={handleFormChange} required />
-                                                {formError && <p style={{ color: 'red' }}>{formError}</p>}
-                                                {formSuccess && <p style={{ color: 'green' }}>{formSuccess}</p>}
-                                            </div>
-                                            <div className="modal-footer">
-                                                <button type="button" className="btn btn-secondary" onClick={() => setShowAddModal(false)}>Cancel</button>
-                                                <button type="submit" className="btn btn-primary">Add</button>
-                                            </div>
-                                        </form>
+                                        <div className="modal-body">
+                                            <form onSubmit={handleFormSubmit}>
+                                                <div className="mb-3">
+                                                    <input className="form-control" name="username" placeholder="Username" value={form.username} onChange={handleFormChange} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input className="form-control" name="email" type="email" placeholder="Email" value={form.email} onChange={handleFormChange} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input className="form-control" name="password" type="password" placeholder="Password" value={form.password} onChange={handleFormChange} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input className="form-control" name="confirmpassword" type="password" placeholder="Confirm Password" value={form.confirmpassword} onChange={handleFormChange} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <label className="form-label">Active</label>
+                                                    <select className="form-control" name="isActive" value={form.isActive} onChange={handleFormChange} required>
+                                                        <option value={true}>Yes</option>
+                                                        <option value={false}>No</option>
+                                                    </select>
+                                                </div>
+                                                {formError && <div className="alert alert-danger">{formError}</div>}
+                                                {formSuccess && <div className="alert alert-success">{formSuccess}</div>}
+                                                <button type="submit" className="btn btn-primary">Add Admin</button>
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -226,25 +251,39 @@ function Admins() {
 
                         {/* Edit Modal */}
                         {showEditModal && (
-                            <div className="modal show d-block" tabIndex="-1">
+                            <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
                                 <div className="modal-dialog">
                                     <div className="modal-content">
                                         <div className="modal-header">
                                             <h5 className="modal-title">Edit Admin</h5>
                                             <button type="button" className="btn-close" onClick={() => setShowEditModal(false)}></button>
                                         </div>
-                                        <form onSubmit={handleFormSubmit}>
-                                            <div className="modal-body">
-                                                <input className="form-control my-2" name="username" placeholder="Username" value={form.username} onChange={handleFormChange} required />
-                                                <input className="form-control my-2" name="email" type="email" placeholder="Email" value={form.email} disabled />
-                                                {formError && <p style={{ color: 'red' }}>{formError}</p>}
-                                                {formSuccess && <p style={{ color: 'green' }}>{formSuccess}</p>}
-                                            </div>
-                                            <div className="modal-footer">
-                                                <button type="button" className="btn btn-secondary" onClick={() => setShowEditModal(false)}>Cancel</button>
-                                                <button type="submit" className="btn btn-primary">Save</button>
-                                            </div>
-                                        </form>
+                                        <div className="modal-body">
+                                            <form onSubmit={handleFormSubmit}>
+                                                <div className="mb-3">
+                                                    <input className="form-control" name="username" placeholder="Username" value={form.username} onChange={handleFormChange} required />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input className="form-control" name="email" type="email" placeholder="Email" value={form.email} disabled />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <label className="form-label">Active</label>
+                                                    <select className="form-control" name="isActive" value={form.isActive} onChange={handleFormChange} required>
+                                                        <option value={true}>Yes</option>
+                                                        <option value={false}>No</option>
+                                                    </select>
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input className="form-control" name="password" type="password" placeholder="New Password (leave blank to keep current)" value={form.password} onChange={handleFormChange} />
+                                                </div>
+                                                <div className="mb-3">
+                                                    <input className="form-control" name="confirmpassword" type="password" placeholder="Confirm New Password" value={form.confirmpassword} onChange={handleFormChange} />
+                                                </div>
+                                                {formError && <div className="alert alert-danger">{formError}</div>}
+                                                {formSuccess && <div className="alert alert-success">{formSuccess}</div>}
+                                                <button type="submit" className="btn btn-primary">Save Changes</button>
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -253,7 +292,7 @@ function Admins() {
                 </div>
             </div>
             <Footer />
-        </>
+        </div>
     );
 }
 
