@@ -40,7 +40,7 @@ function Customers() {
     const fetchCustomers = async () => {
         setIsLoading(true);
         try {
-            const response = await axios.get('https://car-backend-production.up.railway.app/api/bookings');
+            const response = await axios.get('https://car-backend-b17f.onrender.com/api/bookings');
             setBookingsData(response.data);
 
             // Create a map to store unique customers and their bookings
@@ -92,7 +92,7 @@ function Customers() {
 
     const fetchCars = async () => {
         try {
-            const res = await axios.get('https://car-backend-production.up.railway.app/api/cars');
+            const res = await axios.get('https://car-backend-b17f.onrender.com/api/cars');
             setCars(res.data);
         } catch (error) {
             console.error('Error fetching cars:', error);
@@ -169,7 +169,7 @@ function Customers() {
         }
 
         try {
-            await axios.post('https://car-backend-production.up.railway.app/api/bookings', addFormData);
+            await axios.post('https://car-backend-b17f.onrender.com/api/bookings', addFormData);
             setMessage('Customer booking added successfully!');
             setError('');
             setShowAddModal(false);
@@ -233,7 +233,7 @@ function Customers() {
                         return new Date(current.createdAt) > new Date(latest.createdAt) ? current : latest;
                     }, customerBookings[0]);
 
-                    await axios.delete(`https://car-backend-production.up.railway.app/api/bookings/${latestBooking._id}`);
+                    await axios.delete(`https://car-backend-b17f.onrender.com/api/bookings/${latestBooking._id}`);
                     setMessage('Customer booking deleted successfully!');
                     fetchCustomers();
                 } else {
@@ -270,7 +270,7 @@ function Customers() {
         }
 
         try {
-            await axios.put(`https://car-backend-production.up.railway.app/api/bookings/${editingCustomer._id}`, editingCustomer);
+            await axios.put(`https://car-backend-b17f.onrender.com/api/bookings/${editingCustomer._id}`, editingCustomer);
             setMessage('Customer booking updated successfully!');
             setError('');
             setEditingCustomer(null);

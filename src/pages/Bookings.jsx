@@ -55,12 +55,12 @@ function Bookings() {
                     const carId = typeof booking.carId === 'object' ? booking.carId._id : booking.carId;
 
                     // Update car to available
-                    await axios.put(`https://car-backend-production.up.railway.app/api/cars/${carId}`, {
+                    await axios.put(`https://car-backend-b17f.onrender.com/api/cars/${carId}`, {
                         available: true
                     });
 
                     // Update booking status to completed
-                    await axios.put(`https://car-backend-production.up.railway.app/api/bookings/${booking._id}`, {
+                    await axios.put(`https://car-backend-b17f.onrender.com/api/bookings/${booking._id}`, {
                         status: 'Completed'
                     });
 
@@ -102,7 +102,7 @@ function Bookings() {
     const fetchBookings = async () => {
         setIsLoading(true);
         try {
-            const res = await axios.get('https://car-backend-production.up.railway.app/api/bookings');
+            const res = await axios.get('https://car-backend-b17f.onrender.com/api/bookings');
             setBookings(res.data);
             setIsLoading(false);
         } catch (error) {
@@ -114,7 +114,7 @@ function Bookings() {
 
     const fetchCars = async () => {
         try {
-            const res = await axios.get('https://car-backend-production.up.railway.app/api/cars');
+            const res = await axios.get('https://car-backend-b17f.onrender.com/api/cars');
             setCars(res.data);
         } catch (error) {
             console.error('Error fetching cars:', error);
@@ -198,7 +198,7 @@ function Bookings() {
         }
 
         try {
-            await axios.post('https://car-backend-production.up.railway.app/api/bookings', addFormData);
+            await axios.post('https://car-backend-b17f.onrender.com/api/bookings', addFormData);
             setMessage('Booking added successfully!');
             setError('');
             setShowAddModal(false);
@@ -248,11 +248,11 @@ function Bookings() {
 
         try {
             // Update the booking
-            await axios.put(`https://car-backend-production.up.railway.app/api/bookings/${editingBooking._id}`, editingBooking);
+            await axios.put(`https://car-backend-b17f.onrender.com/api/bookings/${editingBooking._id}`, editingBooking);
 
             // If the booking status is changed to Cancelled, update car availability
             if (editingBooking.status === 'Cancelled') {
-                await axios.put(`https://car-backend-production.up.railway.app/api/cars/${editingBooking.carId}`, {
+                await axios.put(`https://car-backend-b17f.onrender.com/api/cars/${editingBooking.carId}`, {
                     available: true
                 });
             }
@@ -272,7 +272,7 @@ function Bookings() {
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this booking?')) {
             try {
-                await axios.delete(`https://car-backend-production.up.railway.app/api/bookings/${id}`);
+                await axios.delete(`https://car-backend-b17f.onrender.com/api/bookings/${id}`);
                 setMessage('Booking deleted successfully!');
                 fetchBookings();
             } catch (err) {
@@ -293,7 +293,7 @@ function Bookings() {
             };
 
             // Get the booking details first
-            const bookingResponse = await axios.get(`https://car-backend-production.up.railway.app/api/bookings/${id}`, config);
+            const bookingResponse = await axios.get(`https://car-backend-b17f.onrender.com/api/bookings/${id}`, config);
             const booking = bookingResponse.data;
 
             // Extract the car ID properly whether it's an object or string
@@ -301,19 +301,19 @@ function Bookings() {
             console.log('Extracted Car ID:', carId);
 
             // Get the car details using the extracted ID
-            const carResponse = await axios.get(`https://car-backend-production.up.railway.app/api/cars/${carId}`, config);
+            const carResponse = await axios.get(`https://car-backend-b17f.onrender.com/api/cars/${carId}`, config);
             const car = carResponse.data;
 
             // Update booking status
             await axios.put(
-                `https://car-backend-production.up.railway.app/api/bookings/${id}`,
+                `https://car-backend-b17f.onrender.com/api/bookings/${id}`,
                 { status: 'Confirmed' },
                 config
             );
 
             // Update car using the extracted ID
             await axios.put(
-                `https://car-backend-production.up.railway.app/api/cars/${carId}`,
+                `https://car-backend-b17f.onrender.com/api/cars/${carId}`,
                 {
                     name: car.name,
                     brand: car.brand,
@@ -345,7 +345,7 @@ function Bookings() {
 
     const handleReject = async (id) => {
         try {
-            await axios.put(`https://car-backend-production.up.railway.app/api/bookings/${id}`, {
+            await axios.put(`https://car-backend-b17f.onrender.com/api/bookings/${id}`, {
                 status: 'Cancelled'
             });
             setMessage('Booking rejected successfully!');

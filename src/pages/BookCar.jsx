@@ -23,7 +23,7 @@ function BookCar() {
     console.log('Car ID:', id);
 
     useEffect(() => {
-        axios.get(`https://car-backend-production.up.railway.app/api/cars/${id}`)
+        axios.get(`https://car-backend-b17f.onrender.com/api/cars/${id}`)
             .then(response => {
                 setCar(response.data);
                 // Set initial total price based on car's price
@@ -85,7 +85,7 @@ function BookCar() {
 
             console.log('Submitting booking data:', formattedData); // Debug log
 
-            const response = await axios.post('https://car-backend-production.up.railway.app/api/bookings', formattedData);
+            const response = await axios.post('https://car-backend-b17f.onrender.com/api/bookings', formattedData);
             console.log('Booking response:', response.data); // Debug log
             alert('Booking request submitted!');
             navigate('/');

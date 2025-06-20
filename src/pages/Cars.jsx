@@ -7,7 +7,7 @@ function Cars() {
     const [cars, setCars] = useState([]); // Initialize the cars state
 
     useEffect(() => {
-        fetch('https://car-backend-production.up.railway.app/api/cars')
+        fetch('https://car-backend-b17f.onrender.com/api/cars')
             .then(response => response.json())
             .then(data => setCars(data))
             .catch(error => console.error('Error fetching cars:', error));

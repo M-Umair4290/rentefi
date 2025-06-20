@@ -64,8 +64,8 @@ function Dashboard() {
 
                 // Fetch bookings and cars data
                 const [bookingsResponse, carsResponse] = await Promise.all([
-                    axios.get('https://car-backend-production.up.railway.app/api/bookings'),
-                    axios.get('https://car-backend-production.up.railway.app/api/cars')
+                    axios.get('https://car-backend-b17f.onrender.com/api/bookings'),
+                    axios.get('https://car-backend-b17f.onrender.com/api/cars')
                 ]);
 
                 const bookings = bookingsResponse.data;
@@ -85,24 +85,23 @@ function Dashboard() {
                     phone: b.customerPhone
                 })));
 
-                // Calculate total revenue from confirmed bookings only
-                const confirmedBookings = bookings.filter(booking =>
-                    booking.status && booking.status.toLowerCase() === 'confirmed'
+                // Calculate total revenue from confirmed and completed bookings only
+                const revenueBookings = bookings.filter(booking =>
+                    booking.status && (booking.status.toLowerCase() === 'confirmed' || booking.status.toLowerCase() === 'completed')
                 );
 
-                console.log('Confirmed bookings:', confirmedBookings.map(b => ({
+                console.log('Revenue bookings:', revenueBookings.map(b => ({
                     id: b._id,
                     price: b.totalPrice,
-                    customer: b.customerName
+                    customer: b.customerName,
+                    status: b.status
                 })));
 
-                const totalRevenue = confirmedBookings.reduce((sum, booking) => {
+                const totalRevenue = revenueBookings.reduce((sum, booking) => {
                     // Convert price to number, handling string values
                     const price = typeof booking.totalPrice === 'string'
                         ? parseFloat(booking.totalPrice.replace(/[^0-9.-]+/g, ''))
                         : Number(booking.totalPrice) || 0;
-
-                    console.log(`Adding booking price: ${price} (original: ${booking.totalPrice}) for ${booking.customerName}`);
                     return sum + price;
                 }, 0);
 
@@ -122,16 +121,17 @@ function Dashboard() {
                 // Process bookings and revenue by week
                 bookings.forEach(booking => {
                     const bookingDate = new Date(booking.createdAt);
-
                     const matchingWeek = last4Weeks.find(week =>
                         bookingDate >= week.startDate && bookingDate <= week.endDate
                     );
-
                     if (matchingWeek) {
                         weeklyBookings[matchingWeek.label]++;
-                        // Only add to revenue if booking is confirmed
-                        if (booking.status === 'Confirmed') {
-                            weeklyRevenue[matchingWeek.label] += (booking.totalPrice || 0);
+                        // Only add to revenue if booking is confirmed or completed
+                        if (booking.status && (booking.status.toLowerCase() === 'confirmed' || booking.status.toLowerCase() === 'completed')) {
+                            const price = typeof booking.totalPrice === 'string'
+                                ? parseFloat(booking.totalPrice.replace(/[^0-9.-]+/g, ''))
+                                : Number(booking.totalPrice) || 0;
+                            weeklyRevenue[matchingWeek.label] += price;
                         }
                     }
                 });

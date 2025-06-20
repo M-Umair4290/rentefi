@@ -12,7 +12,7 @@ function CarDetails() {
 
     useEffect(() => {
         // Fetch the car details using the extracted 'id'
-        axios.get(`https://car-backend-production.up.railway.app/api/cars/${id}`)
+        axios.get(`https://car-backend-b17f.onrender.com/api/cars/${id}`)
             .then(response => setCar(response.data))
             .catch(err => {
                 console.error('Error fetching car details:', err);

@@ -48,7 +48,7 @@ function Vehicles() {
     const checkExpiredBookings = async () => {
         try {
             // Get all bookings
-            const bookingsResponse = await axios.get('https://car-backend-production.up.railway.app/api/bookings');
+            const bookingsResponse = await axios.get('https://car-backend-b17f.onrender.com/api/bookings');
             const bookings = bookingsResponse.data;
             const currentDate = new Date();
 
@@ -64,12 +64,12 @@ function Vehicles() {
 
                 try {
                     // Update car to available
-                    await axios.put(`https://car-backend-production.up.railway.app/api/cars/${booking.carId}`, {
+                    await axios.put(`https://car-backend-b17f.onrender.com/api/cars/${booking.carId}`, {
                         available: true
                     });
 
                     // Update booking status to completed
-                    await axios.put(`https://car-backend-production.up.railway.app/api/bookings/${booking._id}`, {
+                    await axios.put(`https://car-backend-b17f.onrender.com/api/bookings/${booking._id}`, {
                         status: 'Completed'
                     });
 
@@ -103,7 +103,7 @@ function Vehicles() {
 
     const fetchVehicles = () => {
         setIsLoading(true);
-        axios.get(`https://car-backend-production.up.railway.app/api/cars`)
+        axios.get(`https://car-backend-b17f.onrender.com/api/cars`)
             .then(res => {
                 setVehicles(res.data);
                 setIsLoading(false);
@@ -194,7 +194,7 @@ function Vehicles() {
     const handleAddSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('https://car-backend-production.up.railway.app/api/cars', addFormData);
+            await axios.post('https://car-backend-b17f.onrender.com/api/cars', addFormData);
             setAddMessage('Vehicle added successfully!');
             setAddError('');
             setShowAddModal(false);
@@ -223,7 +223,7 @@ function Vehicles() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`https://car-backend-production.up.railway.app/api/cars/${editingVehicle._id}`, editingVehicle);
+            await axios.put(`https://car-backend-b17f.onrender.com/api/cars/${editingVehicle._id}`, editingVehicle);
             setMessage('Vehicle updated successfully!');
             setEditError('');
             fetchVehicles();   // Refresh list
@@ -238,7 +238,7 @@ function Vehicles() {
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this vehicle?')) {
             try {
-                await axios.delete(`https://car-backend-production.up.railway.app/api/cars/${id}`);
+                await axios.delete(`https://car-backend-b17f.onrender.com/api/cars/${id}`);
                 fetchVehicles(); // Refresh list
                 setMessage('Vehicle deleted successfully!');
             } catch (err) {

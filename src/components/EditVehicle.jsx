@@ -26,7 +26,7 @@
 //         const fetchVehicleData = async () => {
 //             try {
 //                 // Make the API request
-//                 const response = await axios.get(`https://car-backend-production.up.railway.app/api/cars/${id}`);
+//                 const response = await axios.get(`https://car-backend-b17f.onrender.com/api/cars/${id}`);
 //                 // Set the form data with the response
 //                 setFormData(response.data);
 //             } catch (err) {
@@ -53,7 +53,7 @@
 //         e.preventDefault();
 //         try {
 //             // Update the vehicle details
-//             const res = await axios.put(`https://car-backend-production.up.railway.app/api/cars/${id}`, formData);
+//             const res = await axios.put(`https://car-backend-b17f.onrender.com/api/cars/${id}`, formData);
 //             setMessage('Vehicle updated successfully!');
 //             setError('');
 //             navigate('/vehicles'); // Navigate back to vehicles list after successful update
