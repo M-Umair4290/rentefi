@@ -112,41 +112,43 @@ function Admins() {
     };
 
     return (
-        <div className="container-fluid">
+        <div className="d-flex flex-column min-vh-100">
             <Navbar />
-            <div className="row">
-                <div className="col-md-2 p-0">
+            <div className="flex-grow-1 d-flex">
+                <div className="col-md-2 p-0 bg-dark">
                     <Sidebar />
                 </div>
-                <div className="col-md-10 p-4">
+                <div className="col-md-10 p-4" style={{ width: '100%' }}>
                     <h2>Admins</h2>
                     <button className="btn btn-primary mb-3" onClick={handleAdd}>Add Admin</button>
                     {loading ? <p>Loading...</p> : error ? <p style={{ color: 'red' }}>{error}</p> : (
-                        <table className="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Username</th>
-                                    <th>Email</th>
-                                    <th>Verified</th>
-                                    <th>Active</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {Array.isArray(admins) && admins.map(admin => (
-                                    <tr key={admin._id}>
-                                        <td>{admin.username}</td>
-                                        <td>{admin.email}</td>
-                                        <td>{admin.isVerified ? 'Yes' : 'No'}</td>
-                                        <td>{admin.isActive ? 'Yes' : 'No'}</td>
-                                        <td>
-                                            <button className="btn btn-sm btn-info me-2" onClick={() => handleEdit(admin)}>Edit</button>
-                                            <button className="btn btn-sm btn-danger" onClick={() => handleDelete(admin._id)}>Delete</button>
-                                        </td>
+                        <div className="table-responsive">
+                            <table className="table table-bordered w-100">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Verified</th>
+                                        <th>Active</th>
+                                        <th>Actions</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {Array.isArray(admins) && admins.map(admin => (
+                                        <tr key={admin._id}>
+                                            <td>{admin.username}</td>
+                                            <td>{admin.email}</td>
+                                            <td>{admin.isVerified ? 'Yes' : 'No'}</td>
+                                            <td>{admin.isActive ? 'Yes' : 'No'}</td>
+                                            <td>
+                                                <button className="btn btn-sm btn-info me-2" onClick={() => handleEdit(admin)}>Edit</button>
+                                                <button className="btn btn-sm btn-danger" onClick={() => handleDelete(admin._id)}>Delete</button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     )}
 
                     {/* Add Modal */}
