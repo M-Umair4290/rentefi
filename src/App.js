@@ -20,6 +20,7 @@ import CarDetails from './pages/CarDetails';
 import BookCar from './pages/BookCar';
 import About from './pages/About';
 import Contact from './pages/Contact';
+import Admins from './pages/Admins';
 
 // import logo from './logo.svg';
 // import './App.css';
@@ -97,6 +98,15 @@ function App() {
             element={
               <PrivateRoute>
                 <EditVehicle />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/admins"
+            element={
+              <PrivateRoute>
+                <Admins />
               </PrivateRoute>
             }
           />
